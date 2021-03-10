@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.5)
 project(BuildInput LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# Add module path to find GLM. The FindXXX.cmake
+list(APPEND CMAKE_MODULE_PATH D:/Libs)
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}") # Eigen3Config.cmake
 
 set(CMAKE_CXX_STANDARD 20) # C++20...
 set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
@@ -10,9 +13,11 @@ set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
 
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
-set(CMAKE_C_COMPILER /usr/bin/gcc-10 CACHE PATH "" FORCE)
-set(CMAKE_C_COMPILER /usr/bin/g++-10 CACHE PATH "" FORCE)
-set(CMAKE_CXX_COMPILER /usr/bin/g++-10 CACHE PATH "" FORCE)
+if(UNIX)
+	set(CMAKE_C_COMPILER /usr/bin/gcc-10 CACHE PATH "" FORCE)
+	set(CMAKE_C_COMPILER /usr/bin/g++-10 CACHE PATH "" FORCE)
+	set(CMAKE_CXX_COMPILER /usr/bin/g++-10 CACHE PATH "" FORCE)
+endif()
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -26,7 +31,9 @@ option(OPTIMIZE_FOR_NATIVE "Build with -march=native" ON)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 #--- Eigen3
-find_package(Eigen3 REQUIRED)
+# When you are on windows, execute the configuration of Eigen3 with CMake
+# Then copy the Eigen3Config to your source dir and delete teh built files from Eigen3
+find_package(Eigen3 REQUIRED NO_MODULE)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
 #--- Build example
@@ -36,8 +43,12 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 file(GLOB HEADERS "*.h" "${CMAKE_SOURCE_DIR}/include/*.h")
 file(GLOB SOURCES "*.cpp" "${CMAKE_SOURCE_DIR}/src/*.cpp")
 add_executable(BuildInput ${SOURCES} ${HEADERS})
-target_link_libraries(BuildInput PRIVATE -fexceptions -fexpensive-optimizations -march=native)
 
+if(UNIX)
+	target_link_libraries(BuildInput PRIVATE -fexceptions -fexpensive-optimizations -march=native)
+else() # WIndows
+	target_link_libraries (BuildInput PRIVATE -fexceptions -fexpensive-optimizations -march=native Eigen3::Eigen)
+endif()
 
 
 # git status

@@ -13,9 +13,6 @@
 #include "RandomGaussian.h"
 #include <random>
 
-//#ifndef M_PI
-//#define M_PI 3.14159265358979323846
-//#endif
 
 RandomGaussian::RandomGaussian() : a_has_value(false), a_second_value(-1.0)
 {

@@ -51,10 +51,10 @@ int Random::m_IntRandom(int min_val, int max_val)
     // Swap if not consistent
     if(min_val > max_val) std::swap(min_val, max_val);
 
-    uint interval;     // Length of interval
-    uint bran;         // Random bits
-    uint iran;         // bran / interval
-    uint remainder;    // bran % interval
+    unsigned int interval;     // Length of interval
+    unsigned int bran;         // Random bits
+    unsigned int iran;         // bran / interval
+    unsigned int remainder;    // bran % interval
 
     interval = (unsigned int) (max_val-min_val + 1);
     if (interval != a_last_interval)

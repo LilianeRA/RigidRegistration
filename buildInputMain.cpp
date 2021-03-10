@@ -8,12 +8,12 @@
 
 #define NUM_SEEDS 20
 
-uint get_size_without_outliers(float outlier_percentage, uint cols)
+unsigned int get_size_without_outliers(float outlier_percentage, unsigned int cols)
 {
     return std::ceil(cols/(1.0f+outlier_percentage));
 }
 
-void read_ply(const std::string &filename, uint downscale,
+void read_ply(const std::string &filename, unsigned int downscale,
               Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
 {
     if(downscale == 0)
@@ -33,7 +33,7 @@ void read_ply(const std::string &filename, uint downscale,
     {
         LOG("cols: "<<static_cast<int>(x_s.size()/downscale));
         point_cloud = Eigen::Matrix<double, 3, Eigen::Dynamic>(3,static_cast<int>(x_s.size()/downscale));
-        for(uint i = 0, j = 0; i < x_s.size(); i++)
+        for(unsigned int i = 0, j = 0; i < x_s.size(); i++)
         {
             if((i+1)%downscale == 0)
             {
@@ -63,7 +63,7 @@ float normalize(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
     Eigen::Vector3d max_pt{-INT_MAX,-INT_MAX,-INT_MAX};
     Eigen::Vector3d min_pt{ INT_MAX, INT_MAX, INT_MAX};
 
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         if(min_pt.x() > point_cloud.col(i).x()) min_pt.x() = point_cloud.col(i).x();
         if(min_pt.y() > point_cloud.col(i).y()) min_pt.y() = point_cloud.col(i).y();
@@ -78,7 +78,7 @@ float normalize(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
     Eigen::Vector3d sub = max_pt-min_pt;
     float scale = 1.0/(std::max(std::max(sub.x(), sub.y()), sub.z()));
     LOG("scale: "<<scale);
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         point_cloud.col(i) = scale*(point_cloud.col(i)-min_pt);
     }
@@ -92,31 +92,31 @@ void apply_transformation(const Eigen::Quaterniond &q,
 {
     Eigen::Matrix3d R = q.toRotationMatrix();
     Eigen::Vector3d centroid{0.0,0.0,0.0};
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         centroid += point_cloud.col(i);
     }
     centroid = centroid/point_cloud.cols();
 
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         point_cloud.col(i) = R*(point_cloud.col(i)-centroid) + t + centroid;
     }
     //LOG(point_cloud.col(0));
 }
 
-uint create_hole(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud, float radius, uint hole_index)
+unsigned int create_hole(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud, float radius, unsigned int hole_index)
 {
     /// 703 880
-    uint ind = INT_MAX;
+    unsigned int ind = INT_MAX;
     if(hole_index == 0) ind = 703;
     else if(hole_index == 1) ind = 880-83;
     else ind = rand()%point_cloud.cols();
 
     Eigen::Vector3d center{point_cloud.col(ind)};
-    uint deleted = 0;
+    unsigned int deleted = 0;
     // Identifying the points to be deleted
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         if(point_cloud.col(i).x() == INT_MAX) deleted++;
         if((center-point_cloud.col(i)).norm() < radius) // radius*scale
@@ -128,7 +128,7 @@ uint create_hole(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud, float ra
     LOG("deleted: "<<deleted<<" "<<point_cloud.cols()-deleted);
     // saving a new point cloud without the INT_MAX points
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_holes(3, point_cloud.cols()-deleted);
-    for(uint i = 0, j = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0, j = 0; i < point_cloud.cols(); i++)
     {
         if(point_cloud.col(i).x() == INT_MAX) continue;
         point_cloud_holes.col(j) = point_cloud.col(i);
@@ -139,7 +139,7 @@ uint create_hole(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud, float ra
 }
 
 void additive_noise(float noise_percentage, const std::array<int, NUM_SEEDS> &seeds,
-                    uint initial_seed, Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
+                    unsigned int initial_seed, Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
 {
     RandomVector *random_vec = new RandomVector(); //generate the displacement vectors on the additive noise step
     RandomGaussian *random_gauss = new RandomGaussian(); //generate the size of the vectors on the additive noise step
@@ -149,7 +149,7 @@ void additive_noise(float noise_percentage, const std::array<int, NUM_SEEDS> &se
 
     Eigen::Vector3d rand_unit_sphere_vec;
 
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         random_vec->m_DoubleRandomVec(rand_unit_sphere_vec[0], rand_unit_sphere_vec[1], rand_unit_sphere_vec[2]);
         rand_unit_sphere_vec.normalize(); // random unit vec direction. Forms a sphere in S^2 of radius 1 if you plot all possible points
@@ -160,14 +160,14 @@ void additive_noise(float noise_percentage, const std::array<int, NUM_SEEDS> &se
 }
 
 void outliers(float outlier_percentage, const std::array<int, NUM_SEEDS> &seeds,
-              uint initial_seed, Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
+              unsigned int initial_seed, Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
 {
     // Generate extra points inside a 3D sphere around the point cloud.
     // The points must be outside the point cloud's bounding box
     // and the sphere must be centered at the cloud's centroid.
 
     // Creating new point cloud with room for outliers
-    uint total_points = point_cloud.cols()*(1.0f+outlier_percentage);
+    unsigned int total_points = point_cloud.cols()*(1.0f+outlier_percentage);
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_outliers(3, total_points);
     point_cloud_outliers.setZero(3, total_points);
 
@@ -175,7 +175,7 @@ void outliers(float outlier_percentage, const std::array<int, NUM_SEEDS> &seeds,
     Eigen::Vector3d centroid{0.0,0.0,0.0};
     Eigen::Vector3d min_pt{ INT_MAX, INT_MAX, INT_MAX};
     Eigen::Vector3d max_pt{-INT_MAX,-INT_MAX,-INT_MAX};
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         centroid += point_cloud.col(i); // computing centroid
         point_cloud_outliers.col(i) = point_cloud.col(i); // copying the original points
@@ -197,8 +197,8 @@ void outliers(float outlier_percentage, const std::array<int, NUM_SEEDS> &seeds,
     double sphere_size = 2.0; // you can change this for any value above 1.0
     Eigen::Vector3d sphere_center{0.5,0.5,0.5}; // the center of normalized point cloud's BB will always be 0.5
 
-    uint total_outliers = total_points-point_cloud.cols();
-    uint counter_outliers = 0;
+    unsigned int total_outliers = total_points-point_cloud.cols();
+    unsigned int counter_outliers = 0;
 
 
     Random *random_number = new Random();
@@ -233,7 +233,7 @@ void save_ply(const std::string &filename,
     x_s.reserve(point_cloud.cols());
     y_s.reserve(point_cloud.cols());
     z_s.reserve(point_cloud.cols());
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         x_s.emplace_back(point_cloud.col(i).x());
         y_s.emplace_back(point_cloud.col(i).y());
@@ -267,7 +267,7 @@ void save_ply(const std::string &filename,
 }
 
 void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
-                          std::string &filename, uint downscale, uint rotation, char translation, uint holes,
+                          std::string &filename, unsigned int downscale, unsigned int rotation, char translation, unsigned int holes,
                           float radius, float noise, int noise_seed, float outlier, int outlier_seed,
                           const std::array<int, NUM_SEEDS> &seeds)
 {
@@ -311,9 +311,9 @@ void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
     }
 
 
-    for(uint i = 0; i < holes; i++)
+    for(unsigned int i = 0; i < holes; i++)
     {
-        uint index1 = create_hole(point_cloud, radius*scale, i);
+        unsigned int index1 = create_hole(point_cloud, radius*scale, i);
         LOG("hole index: "<< index1);
     }
 
@@ -354,17 +354,17 @@ int main(int args, char** argv)
     {
         std::cout<< "Error: Missing arguments\n";
         std::cout<< "Usage: input_dir ply_filename downscale rotation translation holes hole_radius noise outlier seed\n";
-        std::cout<< "../input bun000 45 0 0 0 0 0 0 1\n"; // only downscale
+        std::cout<< "../ bun000 45 0 0 0 0 0 0 1\n"; // only downscale
         std::cout<< "../input bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, 1% noise 5% outlier
         std::cout<< "../input bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, 3% noise 20% outlier
     }
     // Getting the arguments
     std::string input_dir{argv[1]};
     std::string filename{argv[2]};
-    uint downscale      = atoi(argv[3]);
-    uint rotation       = atoi(argv[4]);
+    unsigned int downscale      = atoi(argv[3]);
+    unsigned int rotation       = atoi(argv[4]);
     char translation    = argv[5][0];
-    uint holes          = atoi(argv[6]);
+    unsigned int holes          = atoi(argv[6]);
     float radius        = ( (atoi(argv[6]) > 0) ? atof(argv[7]) : 0.0f);
     float noise         = atof(argv[8])/100.0f;
     float outlier       = atof(argv[9])/100.0f;
@@ -386,7 +386,7 @@ int main(int args, char** argv)
     // seeds computed by a random number generator
     Random *rn = new Random();
     rn->m_SetSeed(seed);
-    for(uint i = 0; i < seeds.size(); i++)
+    for(unsigned int i = 0; i < seeds.size(); i++)
     {
         seeds.at(i) = rn->m_IntRandom(0, INT_MAX);
         LOG(i<<" seeds[i] "<<seeds[i]);
@@ -425,7 +425,7 @@ void generateAdditiveNoise(int initialSeed, std::vector<int> &seeds)
 
     VECTOR3d temp;
     double scaletemp;
-    for (uint i = 0; i < 10; i++){
+    for (unsigned int i = 0; i < 10; i++){
         randVec->m_DoubleRandomVec(temp[0], temp[1], temp[2]);
         scaletemp = randGauss->m_Random();
         std::cout<<i<<": "<<temp[0]<<" "<<temp[1]<<" "<<temp[2]<<std::endl;
@@ -480,7 +480,7 @@ void additive_noise(float noise_percentage, std::mt19937 &gen, Eigen::Matrix<dou
 
     Eigen::Vector3d rand_unit_sphere_vec;
 
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         rand_unit_sphere_vec = Eigen::Vector3d{ud(gen), ud(gen), ud(gen)}; // random vec
         rand_unit_sphere_vec.normalize(); // random unit vec direction. Forms a sphere in S^2 of radius 1 if you plot all possible points
@@ -497,7 +497,7 @@ void outliers(float outlier_percentage, std::mt19937 &gen, Eigen::Matrix<double,
     // and the sphere must be centered at the cloud's centroid.
 
     // Creating new point cloud with room for outliers
-    uint total_points = point_cloud.cols()*(1.0f+outlier_percentage);
+    unsigned int total_points = point_cloud.cols()*(1.0f+outlier_percentage);
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_outliers(3, total_points);
     point_cloud_outliers.setZero(3, total_points);
 
@@ -505,7 +505,7 @@ void outliers(float outlier_percentage, std::mt19937 &gen, Eigen::Matrix<double,
     Eigen::Vector3d centroid{0.0,0.0,0.0};
     Eigen::Vector3d min_pt{ INT_MAX, INT_MAX, INT_MAX};
     Eigen::Vector3d max_pt{-INT_MAX,-INT_MAX,-INT_MAX};
-    for(uint i = 0; i < point_cloud.cols(); i++)
+    for(unsigned int i = 0; i < point_cloud.cols(); i++)
     {
         centroid += point_cloud.col(i); // computing centroid
         point_cloud_outliers.col(i) = point_cloud.col(i); // copying the original points
@@ -527,8 +527,8 @@ void outliers(float outlier_percentage, std::mt19937 &gen, Eigen::Matrix<double,
     double sphere_size = 2.0; // you can change this for any value above 1.0
     Eigen::Vector3d sphere_center{0.5,0.5,0.5}; // the center of normalized point cloud's BB will always be 0.5
 
-    uint total_outliers = total_points-point_cloud.cols();
-    uint counter_outliers = 0;
+    unsigned int total_outliers = total_points-point_cloud.cols();
+    unsigned int counter_outliers = 0;
 
     Eigen::Vector3d outlier;
     while(counter_outliers < total_outliers) // select random outliers
