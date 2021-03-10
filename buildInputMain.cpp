@@ -350,27 +350,29 @@ void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
 
 int main(int args, char** argv)
 {
-    if(args < 10)
+    if(args < 11)
     {
         std::cout<< "Error: Missing arguments\n";
-        std::cout<< "Usage: ply_filename downscale rotation translation holes hole_radius noise outlier seed\n";
-        std::cout<< "bun000 45 0 0 0 0 0 0 1\n"; // only downscale
-        std::cout<< "bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, 1% noise 5% outlier
-        std::cout<< "bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, 3% noise 20% outlier
+        std::cout<< "Usage: input_dir ply_filename downscale rotation translation holes hole_radius noise outlier seed\n";
+        std::cout<< "../input bun000 45 0 0 0 0 0 0 1\n"; // only downscale
+        std::cout<< "../input bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, 1% noise 5% outlier
+        std::cout<< "../input bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, 3% noise 20% outlier
     }
     // Getting the arguments
-    std::string filename{argv[1]};
-    uint downscale      = atoi(argv[2]);
-    uint rotation       = atoi(argv[3]);
-    char translation    = argv[4][0];
-    uint holes          = atoi(argv[5]);
-    float radius        = ( (atoi(argv[5]) > 0) ? atof(argv[6]) : 0.0f);
-    float noise         = atof(argv[7])/100.0f;
-    float outlier       = atof(argv[8])/100.0f;
-    int seed            = atoi(argv[9]);
+    std::string input_dir{argv[1]};
+    std::string filename{argv[2]};
+    uint downscale      = atoi(argv[3]);
+    uint rotation       = atoi(argv[4]);
+    char translation    = argv[5][0];
+    uint holes          = atoi(argv[6]);
+    float radius        = ( (atoi(argv[6]) > 0) ? atof(argv[7]) : 0.0f);
+    float noise         = atof(argv[8])/100.0f;
+    float outlier       = atof(argv[9])/100.0f;
+    int seed            = atoi(argv[10]);
 
     std::array<int, NUM_SEEDS> seeds;
     LOG("ARGS");
+    LOG("input_dir   "<<input_dir);
     LOG("filename    "<<filename);
     LOG("downscale   "<<downscale);
     LOG("rotation    "<<rotation);
@@ -391,7 +393,7 @@ int main(int args, char** argv)
     }
 
     // reading the input point cloud
-    std::string ply_path = (fs::current_path()/fs::path(filename)).string();
+    std::string ply_path = (fs::current_path()/fs::path(input_dir)/fs::path(filename)).string();
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_src; // a.k.a. data
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_tgt; // a.k.a. model
 
