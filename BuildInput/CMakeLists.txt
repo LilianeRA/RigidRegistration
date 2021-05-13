@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 project(BuildInput LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Add module path to find GLM. The FindXXX.cmake
-list(APPEND CMAKE_MODULE_PATH D:/Libs)
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}") # Eigen3Config.cmake
 
 set(CMAKE_CXX_STANDARD 20) # C++20...
 set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
@@ -17,6 +14,10 @@ if(UNIX)
 	set(CMAKE_C_COMPILER /usr/bin/gcc-10 CACHE PATH "" FORCE)
 	set(CMAKE_C_COMPILER /usr/bin/g++-10 CACHE PATH "" FORCE)
 	set(CMAKE_CXX_COMPILER /usr/bin/g++-10 CACHE PATH "" FORCE)
+else() # WIN32
+	# Add module path to find GLM. The FindXXX.cmake
+	list(APPEND CMAKE_MODULE_PATH D:/Libs)
+	list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}") # Eigen3Config.cmake
 endif()
 
 set(CMAKE_BUILD_TYPE Release)

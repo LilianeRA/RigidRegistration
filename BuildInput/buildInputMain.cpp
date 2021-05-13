@@ -226,7 +226,7 @@ void outliers(float outlier_percentage, const std::array<int, NUM_SEEDS> &seeds,
     point_cloud = point_cloud_outliers; // point_cloud_outliers will be free as soon as the function ends
 }
 
-void save_ply(const std::string &filename,
+void save_ply(const std::string &base_dir, const std::string &filename,
               const Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
 {
     std::vector<float> x_s, y_s, z_s;
@@ -251,7 +251,7 @@ void save_ply(const std::string &filename,
     plyOut.getElement("vertex").addProperty<float>("z", z_s);
 
     // Write the object to file
-    fs::path filepath = fs::current_path()/fs::path("point_clouds");
+    fs::path filepath = fs::current_path()/fs::path(base_dir)/fs::path("point_clouds");
     if(!fs::exists(filepath))
         fs::create_directory(filepath);
 
@@ -267,6 +267,7 @@ void save_ply(const std::string &filename,
 }
 
 void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
+						  const std::string &base_dir,
                           std::string &filename, unsigned int downscale, unsigned int rotation, char translation, unsigned int holes,
                           float radius, float noise, int noise_seed, float outlier, int outlier_seed,
                           const std::array<int, NUM_SEEDS> &seeds)
@@ -345,7 +346,7 @@ void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
     filename += ".ply";
 
     LOG("Saving at: "<<filename);
-    save_ply(filename, point_cloud);
+    save_ply(base_dir, filename, point_cloud);
 }
 
 int main(int args, char** argv)
@@ -382,6 +383,8 @@ int main(int args, char** argv)
     LOG("noise       "<<noise);
     LOG("outlier     "<<outlier);
     LOG("seeds       "<<seeds.size());
+    LOG("\n");
+    LOG("Current path: "<<fs::current_path());
 
     // seeds computed by a random number generator
     Random *rn = new Random();
@@ -406,9 +409,9 @@ int main(int args, char** argv)
     // Tgt clouds do not rotate nor translate
     std::string filename_src = filename+"_src";
     std::string filename_tgt = filename+"_tgt";
-    build_new_pointcloud(point_cloud_src, filename_src, downscale, rotation, translation,
+    build_new_pointcloud(point_cloud_src, input_dir, filename_src, downscale, rotation, translation,
                          holes, radius, noise, 7, outlier, 2, seeds);
-    build_new_pointcloud(point_cloud_tgt, filename_tgt, downscale, 0, '0',
+    build_new_pointcloud(point_cloud_tgt, input_dir, filename_tgt, downscale, 0, '0',
                          holes, radius, noise, 3, outlier, 1, seeds);
     return 0;
 }
