@@ -10,7 +10,7 @@
 
 unsigned int get_size_without_outliers(float outlier_percentage, unsigned int cols)
 {
-    return std::ceil(cols/(1.0f+outlier_percentage));
+    return static_cast<unsigned int>(std::ceil(float(cols)/(1.0f+outlier_percentage)));
 }
 
 void read_ply(const std::string &filename, unsigned int downscale,
@@ -33,7 +33,7 @@ void read_ply(const std::string &filename, unsigned int downscale,
     {
         LOG("cols: "<<static_cast<int>(x_s.size()/downscale));
         point_cloud = Eigen::Matrix<double, 3, Eigen::Dynamic>(3,static_cast<int>(x_s.size()/downscale));
-        for(unsigned int i = 0, j = 0; i < x_s.size(); i++)
+        for(Eigen::Index i = 0, j = 0; i < x_s.size(); i++)
         {
             if((i+1)%downscale == 0)
             {
@@ -63,7 +63,7 @@ float normalize(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
     Eigen::Vector3d max_pt{-INT_MAX,-INT_MAX,-INT_MAX};
     Eigen::Vector3d min_pt{ INT_MAX, INT_MAX, INT_MAX};
 
-    for(unsigned int i = 0; i < point_cloud.cols(); i++)
+    for(Eigen::Index i = 0; i < point_cloud.cols(); i++)
     {
         if(min_pt.x() > point_cloud.col(i).x()) min_pt.x() = point_cloud.col(i).x();
         if(min_pt.y() > point_cloud.col(i).y()) min_pt.y() = point_cloud.col(i).y();
@@ -76,9 +76,9 @@ float normalize(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
     LOG("min: "<<min_pt.x()<<" "<<min_pt.y()<<" "<<min_pt.z());
     LOG("max: "<<max_pt.x()<<" "<<max_pt.y()<<" "<<max_pt.z());
     Eigen::Vector3d sub = max_pt-min_pt;
-    float scale = 1.0/(std::max(std::max(sub.x(), sub.y()), sub.z()));
+    float scale = static_cast<float>(1.0/(std::max(std::max(sub.x(), sub.y()), sub.z())));
     LOG("scale: "<<scale);
-    for(unsigned int i = 0; i < point_cloud.cols(); i++)
+    for(Eigen::Index i = 0; i < point_cloud.cols(); i++)
     {
         point_cloud.col(i) = scale*(point_cloud.col(i)-min_pt);
     }
@@ -92,13 +92,13 @@ void apply_transformation(const Eigen::Quaterniond &q,
 {
     Eigen::Matrix3d R = q.toRotationMatrix();
     Eigen::Vector3d centroid{0.0,0.0,0.0};
-    for(unsigned int i = 0; i < point_cloud.cols(); i++)
+    for(Eigen::Index i = 0; i < point_cloud.cols(); i++)
     {
         centroid += point_cloud.col(i);
     }
     centroid = centroid/point_cloud.cols();
 
-    for(unsigned int i = 0; i < point_cloud.cols(); i++)
+    for(Eigen::Index i = 0; i < point_cloud.cols(); i++)
     {
         point_cloud.col(i) = R*(point_cloud.col(i)-centroid) + t + centroid;
     }
@@ -356,16 +356,16 @@ int main(int args, char** argv)
         std::cout<< "Error: Missing arguments\n";
         std::cout<< "Usage: input_dir ply_filename downscale rotation translation holes hole_radius noise outlier seed\n";
         std::cout<< "../ bun000 45 0 0 0 0 0 0 1\n"; // only downscale
-        std::cout<< "../input bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, 1% noise 5% outlier
-        std::cout<< "../input bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, 3% noise 20% outlier
+        std::cout<< "../ bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, 1% noise 5% outlier
+        std::cout<< "../ bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, 3% noise 20% outlier
     }
     // Getting the arguments
     std::string input_dir{argv[1]};
     std::string filename{argv[2]};
-    unsigned int downscale      = atoi(argv[3]);
-    unsigned int rotation       = atoi(argv[4]);
+    unsigned int downscale = atoi(argv[3]);
+    unsigned int rotation  = atoi(argv[4]);
     char translation    = argv[5][0];
-    unsigned int holes          = atoi(argv[6]);
+    unsigned int holes  = atoi(argv[6]);
     float radius        = ( (atoi(argv[6]) > 0) ? atof(argv[7]) : 0.0f);
     float noise         = atof(argv[8])/100.0f;
     float outlier       = atof(argv[9])/100.0f;
@@ -397,9 +397,16 @@ int main(int args, char** argv)
 
     // reading the input point cloud
     std::string ply_path = (fs::current_path()/fs::path(input_dir)/fs::path(filename)).string();
+    if (!fs::is_regular_file(ply_path+".ply"))
+    {
+        LOG("Error: input point cloud not found: " << ply_path);
+        return -1;
+    }
+
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_src; // a.k.a. data
     Eigen::Matrix<double, 3, Eigen::Dynamic> point_cloud_tgt; // a.k.a. model
 
+    LOG("Reading point cloud...");
     read_ply(ply_path+".ply", downscale, point_cloud_src);
     read_ply(ply_path+".ply", downscale, point_cloud_tgt);
 
@@ -409,10 +416,13 @@ int main(int args, char** argv)
     // Tgt clouds do not rotate nor translate
     std::string filename_src = filename+"_src";
     std::string filename_tgt = filename+"_tgt";
+    LOG("Building source and target point clouds...");
     build_new_pointcloud(point_cloud_src, input_dir, filename_src, downscale, rotation, translation,
                          holes, radius, noise, 7, outlier, 2, seeds);
     build_new_pointcloud(point_cloud_tgt, input_dir, filename_tgt, downscale, 0, '0',
                          holes, radius, noise, 3, outlier, 1, seeds);
+
+    LOG("Done");
     return 0;
 }
 
