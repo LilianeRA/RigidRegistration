@@ -1,5 +1,6 @@
 #include "MethodsData.h"
-#include "DirUtils.h"
+#include "DirHandler.h"
+#include "Visualizer3D.h"
 #include <Eigen/Dense>
 #include <iostream>
 #include <fstream>
@@ -145,8 +146,8 @@ void MethodsData::setPointClouds(const std::string &sourcemesh, const std::strin
 			std::cout<<"Target: "<<targetmesh<<std::endl;
             exit(EXIT_FAILURE);
         }
-        std::string srcmesh = DirUtils::JoinPaths(this->inputdir, sourcemesh);
-        std::string tgtmesh = DirUtils::JoinPaths(this->inputdir, targetmesh);
+        std::string srcmesh = DirHandler::JoinPaths(this->inputdir, sourcemesh);
+        std::string tgtmesh = DirHandler::JoinPaths(this->inputdir, targetmesh);
 
 		this->sourcemesh = new PointCloud(srcmesh);
 		this->targetmesh = new PointCloud(tgtmesh);
@@ -167,12 +168,12 @@ void MethodsData::saveParameters()
 	std::ofstream paramfile;
 	std::string paramname("parameters.txt");
 	std::string parampath("");
-	parampath = DirUtils::JoinPaths(this->outputdir, this->testname);
-	if(!DirUtils::IsDirectory(parampath))
+	parampath = DirHandler::JoinPaths(this->outputdir, this->testname);
+	if(!DirHandler::IsDirectory(parampath))
     {
-        DirUtils::CreateDir(parampath);
+        DirHandler::CreateDir(parampath);
     }
-	parampath = DirUtils::JoinPaths(parampath, paramname);
+	parampath = DirHandler::JoinPaths(parampath, paramname);
 
 	std::cout<<"Saving parameters in:"<<std::endl;
 	std::cout<<parampath<<std::endl;
@@ -218,15 +219,17 @@ void MethodsData::saveParameters()
 
 void MethodsData::run()
 {
-    /*if (this->mode == MODE::MESHVIEW || this->mode == MODE::VIDEOVIEW)
+    if (this->mode == MODE::MESHVIEW || this->mode == MODE::VIDEOVIEW)
     {
-        WindowGLFW *glfw = new WindowGLFW(false, "View");
+        /*WindowGLFW* glfw = new WindowGLFW(false, "View");
 		std::vector<Graphics*> graphics;
 		//graphics.push_back(sourcemesh->getGraphics('h'));
 		graphics.push_back(sourcemesh->getGraphics('p'));
-		graphics.push_back(targetmesh->getGraphics('p'));
-        glfw->Run(&graphics);
-    }*/
+		graphics.push_back(targetmesh->getGraphics('p'));*/
+        //glfw->Run(&graphics);
+        Visualizer3D *window = new Visualizer3D();
+        window->Run();
+    }
 }
 
 void MethodsData::initInput(int downscalestep)
@@ -248,11 +251,11 @@ void MethodsData::initInput(int downscalestep)
 			if(this->totalholes >= 2)
 				this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 880));
 		}*/
-		sourcemesh->saveInput(DirUtils::JoinPaths(this->maindir, this->testname));
+		sourcemesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
 
 		targetmesh->setType(PointCloud::TYPE::TARGET_MODEL);
 		targetmesh->setColor(Eigen::Vector3d(0.0, 0.0, 0.0));
 		targetmesh->build(downscalestep);
-		targetmesh->saveInput(DirUtils::JoinPaths(this->maindir, this->testname));
+		targetmesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
     }
 }

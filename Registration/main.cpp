@@ -5,7 +5,7 @@
 
 #include "pch.h"
 #include "CommandLineParser.h"
-#include "DirUtils.h"
+#include "DirHandler.h"
 #include "MethodsData.h"
 
 
@@ -78,11 +78,7 @@ int main(int argc, char const** argv)
     **/
 
 
-    /**
-    argument sample:
-    **/
-    //std::string maindir(GetCurrentWorkingDir());
-    std::string maindir(DirUtils::GetCurrentDir());
+    std::string maindir(DirHandler::GetCurrentDir());
     size_t found = maindir.find("build");
     if (found != std::string::npos) 
         maindir = maindir.substr(0, found - 1);
@@ -135,15 +131,16 @@ int main(int argc, char const** argv)
     std::string targetmesh("");
 
     std::string inputdir = parser.get<std::string>("inputdir");   // Can't be empty
-    if (!DirUtils::IsDirectory(inputdir))
+    if (!DirHandler::IsDirectory(inputdir))
     {
         PRINT_ERROR("Error: input directory path is not a valid path: " << inputdir);
         return -1;
     }
+    
     std::string outputdir = parser.get<std::string>("outputdir"); // Can't be empty
-    if (!DirUtils::IsDirectory(outputdir))
+    if (!DirHandler::IsDirectory(outputdir))
     {
-        DirUtils::CreateDir(outputdir);
+        DirHandler::CreateDir(outputdir);
     }
     if (outputdir.compare(".") == 0) // if it is the current dir, then copy the absolute path from maindir
         outputdir = maindir;
@@ -180,14 +177,14 @@ int main(int argc, char const** argv)
         }
 
 
-        if (!DirUtils::IsFile(DirUtils::JoinPaths(inputdir, sourcemesh)))
+        if (!DirHandler::IsFile(DirHandler::JoinPaths(inputdir, sourcemesh)))
         {
-            PRINT_ERROR("Error: source mesh path is not a valid file: " << DirUtils::JoinPaths(inputdir, sourcemesh));
+            PRINT_ERROR("Error: source mesh path is not a valid file: " << DirHandler::JoinPaths(inputdir, sourcemesh));
             return -1;
         }
-        if (!DirUtils::IsFile(DirUtils::JoinPaths(inputdir, targetmesh)))
+        if (!DirHandler::IsFile(DirHandler::JoinPaths(inputdir, targetmesh)))
         {
-            PRINT_ERROR("Error: target mesh path is not a valid file: " << DirUtils::JoinPaths(inputdir, targetmesh));
+            PRINT_ERROR("Error: target mesh path is not a valid file: " << DirHandler::JoinPaths(inputdir, targetmesh));
             return -1;
         }
 
@@ -292,7 +289,7 @@ int main(int argc, char const** argv)
         return -1;
     }
 
-
+    /*
     PRINT("******************************");
     PRINT("mode       " << mode);
     PRINT("inputdir   " << inputdir);
@@ -315,7 +312,7 @@ int main(int argc, char const** argv)
     PRINT("gtfilename " << gtfilename);
     PRINT("sourcemesh " << sourcemesh);
     PRINT("targetmesh " << targetmesh);
-    PRINT("******************************");
+    PRINT("******************************");*/
 
 
     MethodsData* RR = new MethodsData(maindir, inputdir, outputdir, testname, threads);

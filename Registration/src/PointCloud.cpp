@@ -1,5 +1,5 @@
 #include "PointCloud.h"
-#include "DirUtils.h"
+#include "DirHandler.h"
 #include "happly.h"
 #include <fstream>
 #include <sstream>
@@ -16,7 +16,7 @@ PointCloud::PointCloud(const std::string &filepath)
 	}
 
 	this->filepath = filepath;
-	this->filename = DirUtils::GetFileName(this->filepath);
+	this->filename = DirHandler::GetFileName(this->filepath);
 
 	this->type = TYPE::ERROR;
 	this->originalVertices.clear();
@@ -308,7 +308,7 @@ void save_ply(const std::string &fullFilepath,
 	plyOut.getElement("vertex").addProperty<float>("z", z_s);
 
 	// Write the object to file
-	if (!DirUtils::IsFile(fullFilepath))
+	if (!DirHandler::IsFile(fullFilepath))
 	{
 		plyOut.write(fullFilepath, happly::DataFormat::ASCII);
 	} // not saving the same file twice
@@ -322,7 +322,7 @@ void PointCloud::saveInput(const std::string & testpath)
 {
 	if (originalVertices.size() > 0 )
 	{
-		std::string fullpathOrig{ DirUtils::JoinPaths(testpath, this->filename) };
+		std::string fullpathOrig{ DirHandler::JoinPaths(testpath, this->filename) };
 		if (this->type == TYPE::SOURCE_DATA)
 		{
 			fullpathOrig = fullpathOrig + "-source-orig.ply";
@@ -335,7 +335,7 @@ void PointCloud::saveInput(const std::string & testpath)
 	}
 	if (downscaledVertices.size() > 0 )
 	{
-		std::string fullpathOrig{ DirUtils::JoinPaths(testpath, this->filename) };
+		std::string fullpathOrig{ DirHandler::JoinPaths(testpath, this->filename) };
 		if (this->type == TYPE::SOURCE_DATA)
 		{
 			fullpathOrig = fullpathOrig + "-source-down.ply";
@@ -348,7 +348,7 @@ void PointCloud::saveInput(const std::string & testpath)
 	}
 	if (normalizedVertices.size() > 0 )
 	{
-		std::string fullpathOrig{ DirUtils::JoinPaths(testpath, this->filename) };
+		std::string fullpathOrig{ DirHandler::JoinPaths(testpath, this->filename) };
 		if (this->type == TYPE::SOURCE_DATA)
 		{
 			fullpathOrig = fullpathOrig + "-source-norm.ply";

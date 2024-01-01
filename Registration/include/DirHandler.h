@@ -1,16 +1,16 @@
 // A static class to manipulate files, directories and paths
 // This is a substitute for std::filesystem os C++20, which does not work here
-#ifndef DIRUTILS_H
-#define DIRUTILS_H
+#ifndef DIRHANDLER_H
+#define DIRHANDLER_H
 
 #include <vector>
 #include <string>
 
-class DirUtils
+class DirHandler
 {
 public:
-	DirUtils();
-	virtual ~DirUtils();
+	DirHandler();
+	virtual ~DirHandler();
 
 	static bool PathExists(const std::string &path);
 	static bool IsPathRelative(const std::string &path);
