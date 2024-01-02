@@ -32,7 +32,7 @@
 
 find_path( Visualizer3D_INCLUDE_DIR 
     NAMES
-        Visualizer3D.h
+        WindowGLFW.h
     HINTS
         "${Visualizer3D_LOCATION}/include"
         "$ENV{Visualizer3D_LOCATION}/include"

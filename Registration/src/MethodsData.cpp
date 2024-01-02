@@ -1,6 +1,6 @@
 #include "MethodsData.h"
 #include "DirHandler.h"
-#include "Visualizer3D.h"
+#include "WindowGLFW.h"
 #include <Eigen/Dense>
 #include <iostream>
 #include <fstream>
@@ -227,8 +227,14 @@ void MethodsData::run()
 		graphics.push_back(sourcemesh->getGraphics('p'));
 		graphics.push_back(targetmesh->getGraphics('p'));*/
         //glfw->Run(&graphics);
-        Visualizer3D *window = new Visualizer3D();
+        
+
+        std::cout << "window->Run(); **********************************************\n";
+        WindowGLFW *window = new WindowGLFW(false, "teste");
+        window->InitializeWindow(); 
         window->Run();
+        //Visualizer3D *window = new Visualizer3D();
+        //window->Run();
     }
 }
 
