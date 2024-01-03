@@ -10,7 +10,8 @@ class CustomWindow : public WindowGLFW
 		CustomWindow(bool bidimensional, const std::string& title, int width = 1080, int height = 720);
 		virtual ~CustomWindow();
 
-		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);
+		void SetSourcePointCloud(const PointCloud* pointcloud, const glm::vec3& color);
+		void SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color);
 
 	protected:
 		virtual void SetCustomWindow() override;
@@ -18,6 +19,14 @@ class CustomWindow : public WindowGLFW
 		virtual void CustomShutdown() override;
 
 	private:
+		bool showSrcPointCloud = true;
+		bool showTgtPointCloud = true;
+		std::string sourcePointCloudName{ "" };
+		std::string targetPointCloudName{ "" };
+
 		std::vector<DrawableSpheres*> mOtherSpheres;
+
+
+		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);
 };
 #endif // CUSTOMWINDOW_H

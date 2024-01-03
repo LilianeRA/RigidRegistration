@@ -11,6 +11,16 @@ CustomWindow::~CustomWindow()
 	
 }
 
+void CustomWindow::SetSourcePointCloud(const PointCloud* pointcloud, const glm::vec3& color)
+{
+	sourcePointCloudName = "Source";
+	SetPointCloud(pointcloud, sourcePointCloudName, color);
+}
+void CustomWindow::SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color)
+{
+	targetPointCloudName = "Target";
+	SetPointCloud(pointcloud, targetPointCloudName, color);
+}
 void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string &pointCloudName, const glm::vec3 &color) 
 {
 	if (!pointcloud) return;
@@ -28,15 +38,19 @@ void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string
 
 void CustomWindow::SetCustomWindow()
 {
-	//ImGui::Begin("Custom Configuration");
-    // custom checkboxes
-	//ImGui::End();
+	ImGui::Begin("Custom Configuration");
+	ImGui::Checkbox("Show source point cloud:", &showSrcPointCloud);
+	ImGui::Checkbox("Show target point cloud:", &showTgtPointCloud);
+	ImGui::End();
 }
 
 void CustomWindow::CustomDraw()
 {
 	for (const auto ds : mOtherSpheres)
 	{
+		if (!showSrcPointCloud && sourcePointCloudName.compare(ds->GetName()) == 0) continue;
+		if (!showTgtPointCloud && targetPointCloudName.compare(ds->GetName()) == 0) continue;
+
 		ds->Draw(mLightPos, mLightColor);
 	}
 }

@@ -254,8 +254,8 @@ void MethodsData::run()
         
         CustomWindow* window = new CustomWindow(false, "View");
         window->InitializeWindow(); 
-        window->SetPointCloud(sourcemesh, "Source", glm::vec3(0.5, 0.0, 0.0));
-        window->SetPointCloud(targetmesh, "Target", glm::vec3(0.0, 0.0, 0.0));
+        window->SetSourcePointCloud(sourcemesh, glm::vec3(0.5, 0.0, 0.0));
+        window->SetTargetPointCloud(targetmesh, glm::vec3(0.0, 0.0, 0.0));
         window->Run();
 
         //Visualizer3D *window = new Visualizer3D();
