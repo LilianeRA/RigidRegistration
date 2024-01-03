@@ -9,11 +9,11 @@ class Point
         Point(double x, double y, double z);
         virtual ~Point();
 
-		Eigen::Vector3d getPosition();
-		Eigen::Vector3d getColor();
+		const Eigen::Vector3d& getPosition() const;
+		const Eigen::Vector3d& getColor() const;
 		bool isRemoved();
 		void setAsRemoved(bool removed);
-		void setColor(const Eigen::Vector3d &color);
+		void setColor(const Eigen::Vector3d& color);
 		void translate(const Eigen::Vector3d &translation);
 		void rotate(const Eigen::Affine3d &rotation);		
 

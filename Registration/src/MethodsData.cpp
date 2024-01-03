@@ -1,16 +1,16 @@
 #include "MethodsData.h"
 #include "DirHandler.h"
-#include "WindowGLFW.h"
+#include "CustomWindow.h"
 #include <Eigen/Dense>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
 
 
-MethodsData::MethodsData(const std::string &maindir,const std::string &inputdir, const std::string &outputdir, const std::string &testname, int threads)
+MethodsData::MethodsData(const std::string& maindir, const std::string& inputdir, const std::string& outputdir, const std::string& testname, int threads)
 {
     //ctor
-    if(testname.empty())
+    if (testname.empty())
     {
         std::cout<<"Error: testname empty\n";
         exit(EXIT_FAILURE);
@@ -26,11 +26,6 @@ MethodsData::MethodsData(const std::string &maindir,const std::string &inputdir,
 	this->outputdir = outputdir;
     this->testname = testname;
     this->threads = threads;
-
-    this->mode = MODE::ERROR;
-    this->method = METHOD::ERROR;
-    this->match = MATCH::ERROR;
-    this->estimation = ESTIMATION::ERROR;
 
 	this->sourcemesh = nullptr;
 	this->targetmesh = nullptr;
@@ -146,13 +141,13 @@ void MethodsData::setPointClouds(const std::string &sourcemesh, const std::strin
 			std::cout<<"Target: "<<targetmesh<<std::endl;
             exit(EXIT_FAILURE);
         }
-        std::string srcmesh = DirHandler::JoinPaths(this->inputdir, sourcemesh);
-        std::string tgtmesh = DirHandler::JoinPaths(this->inputdir, targetmesh);
+        std::string srcmeshpath = DirHandler::JoinPaths(this->inputdir, sourcemesh);
+        std::string tgtmeshpath = DirHandler::JoinPaths(this->inputdir, targetmesh);
 
-		this->sourcemesh = new PointCloud(srcmesh);
-		this->targetmesh = new PointCloud(tgtmesh);
-		this->totalholes = totalholes;
-		this->holeradius = holeradius;
+		this->sourcemesh = new PointCloud(srcmeshpath);
+		this->targetmesh = new PointCloud(tgtmeshpath);
+		/*this->totalholes = totalholes;
+		this->holeradius = holeradius;*/
         initInput(downscalestep);
     }
     else
@@ -160,6 +155,35 @@ void MethodsData::setPointClouds(const std::string &sourcemesh, const std::strin
         std::cout<<std::endl;
         std::cout<<"Warning: passing mesh file to video mode. Ignored."<<std::endl;
         std::cout<<std::endl;
+    }
+}
+
+
+void MethodsData::initInput(int downscalestep)
+{
+    /// if mode == video, save list of frames with skip
+    /// if mode == mesh, read source/data and target/model point cloud
+
+    if (this->mode == MODE::MESHVIEW || this->mode == MODE::MESHBACTH)
+    {
+        /// read ply or dat file
+        sourcemesh->setType(PointCloud::TYPE::SOURCE_DATA);
+        sourcemesh->setColor(Eigen::Vector3d(0.8, 0.0, 0.0));
+        sourcemesh->build(downscalestep);
+        /*this->holesIndex.clear();
+        if (this->totalholes > 0)
+        {
+            if (this->totalholes >= 1)
+                this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 703));
+            if (this->totalholes >= 2)
+                this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 880));
+        }*/
+        sourcemesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
+
+        targetmesh->setType(PointCloud::TYPE::TARGET_MODEL);
+        targetmesh->setColor(Eigen::Vector3d(0.0, 0.0, 0.0));
+        targetmesh->build(downscalestep);
+        targetmesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
     }
 }
 
@@ -208,12 +232,12 @@ void MethodsData::saveParameters()
 	paramfile << "executionnumber=" <<this->executionnumber << "\n";
 	paramfile << "useGT=" <<(this->useGT ? "true" : "false")<< "\n";
 	paramfile << "gtfilepath=" <<(this->gtfilepath.empty() ? "---" : this->gtfilepath)<< "\n";
-	paramfile << "totalholes=" <<this->totalholes << "\n";
+	/*paramfile << "totalholes=" << this->totalholes << "\n";
 	paramfile << "holeradius=" <<this->holeradius << "\n";
 	for(unsigned int i = 0; i < this->holesIndex.size(); i++)
 	{
 		paramfile << "holesIndex=" <<this->holesIndex.at(i) << "\n";
-	}
+	}*/
 	paramfile.close();
 }
 
@@ -228,40 +252,13 @@ void MethodsData::run()
 		graphics.push_back(targetmesh->getGraphics('p'));*/
         //glfw->Run(&graphics);
         
-
-        std::cout << "window->Run(); **********************************************\n";
-        WindowGLFW *window = new WindowGLFW(false, "teste");
+        CustomWindow* window = new CustomWindow(false, "View");
         window->InitializeWindow(); 
+        window->SetPointCloud(sourcemesh, "Source", glm::vec3(0.5, 0.0, 0.0));
+        window->SetPointCloud(targetmesh, "Target", glm::vec3(0.0, 0.0, 0.0));
         window->Run();
+
         //Visualizer3D *window = new Visualizer3D();
         //window->Run();
-    }
-}
-
-void MethodsData::initInput(int downscalestep)
-{
-	/// if mode == video, save list of frames with skip
-	/// if mode == mesh, read source/data and target/model point cloud
-
-    if(this->mode == MODE::MESHVIEW || this->mode == MODE::MESHBACTH)
-    {
-        /// read ply or dat file
-		sourcemesh->setType(PointCloud::TYPE::SOURCE_DATA);
-		sourcemesh->setColor(Eigen::Vector3d(0.8, 0.0, 0.0));
-		sourcemesh->build(downscalestep);
-		/*this->holesIndex.clear();
-		if(this->totalholes > 0)
-		{
-			if(this->totalholes >= 1)
-				this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 703));
-			if(this->totalholes >= 2)
-				this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 880));
-		}*/
-		sourcemesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
-
-		targetmesh->setType(PointCloud::TYPE::TARGET_MODEL);
-		targetmesh->setColor(Eigen::Vector3d(0.0, 0.0, 0.0));
-		targetmesh->build(downscalestep);
-		targetmesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
     }
 }

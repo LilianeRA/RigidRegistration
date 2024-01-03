@@ -44,11 +44,11 @@ class MethodsData
             ERROR
         };
 
-        MODE mode; // meshbatch meshview videobatch videoview
+        MODE mode = MODE::ERROR; // meshbatch meshview videobatch videoview
 
-        METHOD method;
-        MATCH match;
-        ESTIMATION estimation;
+        METHOD method = METHOD::ERROR;
+        MATCH match = MATCH::ERROR;
+        ESTIMATION estimation = ESTIMATION::ERROR;
 
         int threads = 0;
         int executionnumber = 0;
@@ -59,11 +59,11 @@ class MethodsData
         std::string outputdir = ""; // is also the result directory
         std::string testname = "";
         std::string gtfilepath = "";
-		PointCloud *sourcemesh;
+		PointCloud* sourcemesh;
 		PointCloud *targetmesh;
-		int totalholes;
+		/*int totalholes;
 		double holeradius;
-		std::vector<int> holesIndex; // the hole center is a point of the point cloud 
+		std::vector<int> holesIndex; // the hole center is a point of the point cloud */
 
         void initInput(int downscalestep);
 };

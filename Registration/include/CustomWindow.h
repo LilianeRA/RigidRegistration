@@ -2,6 +2,7 @@
 #define CUSTOMWINDOW_H
 
 #include "WindowGLFW.h"
+#include "PointCloud.h"
 
 class CustomWindow : public WindowGLFW
 {
@@ -9,7 +10,7 @@ class CustomWindow : public WindowGLFW
 		CustomWindow(bool bidimensional, const std::string& title, int width = 1080, int height = 720);
 		virtual ~CustomWindow();
 
-		void AppendDrawableSphere(DrawableSpheres* ds);
+		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);
 
 	protected:
 		virtual void SetCustomWindow() override;
@@ -17,7 +18,6 @@ class CustomWindow : public WindowGLFW
 		virtual void CustomShutdown() override;
 
 	private:
-
 		std::vector<DrawableSpheres*> mOtherSpheres;
 };
 #endif // CUSTOMWINDOW_H

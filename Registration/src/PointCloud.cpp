@@ -6,7 +6,7 @@
 #include <iostream>
 #include <iomanip>      // std::setprecision
 
-PointCloud::PointCloud(const std::string &filepath)
+PointCloud::PointCloud(const std::string& filepath)
 {
     //ctor
 	if(filepath.empty())
@@ -18,12 +18,10 @@ PointCloud::PointCloud(const std::string &filepath)
 	this->filepath = filepath;
 	this->filename = DirHandler::GetFileName(this->filepath);
 
-	this->type = TYPE::ERROR;
-	this->originalVertices.clear();
+	/*this->originalVertices.clear();
 	this->downscaledVertices.clear();
-	this->precision = 15;
 	this->pointgraphics = new Graphics();
-	this->holegraphics = new Graphics();
+	this->holegraphics = new Graphics();*/
 
 	this->color[0] = 0.0;
 	this->color[1] = 0.0;
@@ -33,10 +31,13 @@ PointCloud::PointCloud(const std::string &filepath)
 PointCloud::~PointCloud()
 {
     //dtor
-	for(unsigned int i = 0; originalVertices.size(); i++)
+	for (unsigned int i = 0; originalVertices.size(); i++)
 	{
 		delete(originalVertices.at(i));
 	}
+	this->originalVertices.clear();
+	
+	/*
 	for(unsigned int i = 0; downscaledVertices.size(); i++)
 	{
 		delete(downscaledVertices.at(i));
@@ -45,10 +46,10 @@ PointCloud::~PointCloud()
 	{
 		delete(normalizedVertices.at(i));
 	}
+	
 	this->downscaledVertices.clear();
-	this->originalVertices.clear();
 	this->normalizedVertices.clear();
-	this->drawholes.clear();
+	this->drawholes.clear();*/
 }
 
 void PointCloud::setType(TYPE type)
@@ -63,7 +64,7 @@ void PointCloud::setColor(const Eigen::Vector3d &color)
 
 void PointCloud::build(int skipstep)
 {
-	if(skipstep < 0)
+	if (skipstep < 0)
 	{
 		skipstep = 0;
 		std::cout<<"Warning: skipstep invalid. Setting to 0."<<std::endl;
@@ -72,18 +73,19 @@ void PointCloud::build(int skipstep)
 
 	read();
 
-	if(this->skipstep >= 0)
+	/*if(this->skipstep >= 0)
 		downscale();
 	else
 		std::cout<<"Warning: Not downscaling."<<std::endl;
 
 	normalize();
 
-	this->pointgraphics->setPoints(normalizedVertices);
+	this->pointgraphics->setPoints(normalizedVertices);*/
 }
 
 void PointCloud::read()
 {
+	//std::cout << "read: " << this->filepath <<std::endl;
     if(this->filepath.find(".ply") == std::string::npos &&
        this->filepath.find(".dat") == std::string::npos)
     {
@@ -176,7 +178,7 @@ void PointCloud::read()
 	std::cout<<"Vertices: "<<originalVertices.size()<<std::endl;
 }
 
-void PointCloud::downscale()
+/*void PointCloud::downscale()
 {
 	downscaledVertices.clear();
 	for(unsigned int i = 0; i < originalVertices.size(); i++)
@@ -274,13 +276,29 @@ int PointCloud::createHole(double radius, int index)
 	return index;
 }
 
-Graphics* PointCloud::getGraphics(char point_or_hole)
+const std::vector<Point*>& PointCloud::getNormalizedPoints() const
+{
+	return normalizedVertices;
+}
+
+const std::vector<Point*>& PointCloud::getDownscaledPoints() const
+{
+	return downscaledVertices;
+}
+
+Graphics* PointCloud::getGraphics(char point_or_hole) const
 {
 	if(point_or_hole == 'p')
 		return this->pointgraphics;
 	if(point_or_hole == 'h')
 		return this->holegraphics;
+}*/
+
+const std::vector<Point*>& PointCloud::getPoints() const
+{
+	return originalVertices;
 }
+
 
 void save_ply(const std::string &fullFilepath,
 	const std::vector<Point*> point_cloud)
@@ -333,7 +351,7 @@ void PointCloud::saveInput(const std::string & testpath)
 		}
 		save_ply(fullpathOrig, originalVertices);
 	}
-	if (downscaledVertices.size() > 0 )
+	/*if (downscaledVertices.size() > 0)
 	{
 		std::string fullpathOrig{ DirHandler::JoinPaths(testpath, this->filename) };
 		if (this->type == TYPE::SOURCE_DATA)
@@ -358,7 +376,7 @@ void PointCloud::saveInput(const std::string & testpath)
 			fullpathOrig = fullpathOrig + "-target-norm.ply";
 		}
 		save_ply(fullpathOrig, normalizedVertices);
-	}
+	}*/
 
 	/*if (originalVertices.size() == 0 ||
 	   downscaledVertices.size() == 0 ||

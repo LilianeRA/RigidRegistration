@@ -19,6 +19,21 @@ Point::~Point()
     //dtor
 }
 
+const Eigen::Vector3d& Point::getPosition() const
+{
+	return this->position;
+}
+
+const Eigen::Vector3d& Point::getColor() const
+{
+	return this->color;
+}
+
+bool Point::isRemoved()
+{
+	return this->removed;
+}
+
 void Point::setAsRemoved(bool removed)
 {
 	this->removed = removed;
@@ -27,23 +42,6 @@ void Point::setAsRemoved(bool removed)
 void Point::setColor(const Eigen::Vector3d &color)
 {
 	this->color = color;
-}
-
-Eigen::Vector3d Point::getPosition()
-{
-	Eigen::Vector3d p(this->position);
-	return p;
-}
-
-Eigen::Vector3d Point::getColor()
-{
-	Eigen::Vector3d c(this->color);
-	return c;
-}
-
-bool Point::isRemoved()
-{
-	return this->removed;
 }
 
 void Point::translate(const Eigen::Vector3d &translation)

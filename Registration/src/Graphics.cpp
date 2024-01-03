@@ -2,7 +2,7 @@
 //#include "GL/glew.h"
 #include <iostream>
 
-Graphics::Graphics(double radius)
+/*Graphics::Graphics(double radius)
 {
     //ctor
 	this->radius = radius;
@@ -31,7 +31,7 @@ void Graphics::draw()
 {
 	//if(vertices.size() == 0) return;
 	
-	/*double scale = 100.0;
+	/ *double scale = 100.0;
 	Eigen::Vector3d color = vertices.at(0)->getColor();
 	glColor3f(color[0], color[1], color[2]);
 	for(unsigned int i = 0; i < vertices.size(); i++)
@@ -44,5 +44,5 @@ void Graphics::draw()
 		glTranslatef(pos[0], pos[1], pos[2]);
 		gluSphere(gluNewQuadric(),radius/scale,10,10);
 		glPopMatrix();
-	}*/
-}
+	}* /
+}*/

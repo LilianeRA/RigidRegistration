@@ -38,9 +38,11 @@ void read_ply(const std::string &filename, unsigned int downscale,
             if((i+1)%downscale == 0)
             {
                 point_cloud.col(j) << x_s.at(i), y_s.at(i), z_s.at(i);
+                //LOG(std::to_string(point_cloud.col(j).x()) << " " <<std::to_string(point_cloud.col(j).y()) << " " <<std::to_string(point_cloud.col(j).z()));
                 j++;
             }
         }
+        //LOG("");
     }
     else
     {
@@ -256,10 +258,11 @@ void save_ply(const std::string &base_dir, const std::string &filename,
         fs::create_directory(filepath);
 
     filepath = filepath/fs::path(filename);
-    if(!fs::exists(filepath))
+    /*if (!fs::exists(filepath))
     {
         plyOut.write(filepath.string(), happly::DataFormat::ASCII);
-    } // not saving the same file twice
+    }*/ // not saving the same file twice
+    plyOut.write(filepath.string(), happly::DataFormat::ASCII);
 
     x_s.clear();
     y_s.clear();
@@ -281,15 +284,22 @@ void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
 
     if(rotation == 45)
     {
-        if(translation == '1')
+        if(translation == '0')
         {
-            apply_transformation(q45, t45, point_cloud);
+            apply_transformation(q45, Eigen::Vector3d{0.0,0.0,0.0}, point_cloud);
         }
         else
         {
-            if(translation == '2')
+            if (translation == '1')
             {
-                apply_transformation(q45, t90, point_cloud);
+                apply_transformation(q45, t45, point_cloud);
+            }
+            else
+            {
+                if (translation == '2')
+                {
+                    apply_transformation(q45, t90, point_cloud);
+                }
             }
         }
     }
@@ -297,15 +307,22 @@ void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
     {
         if(rotation == 90)
         {
-            if(translation == '2')
+            if (translation == '0')
             {
-                apply_transformation(q90, t90, point_cloud);
+                apply_transformation(q90, Eigen::Vector3d{ 0.0,0.0,0.0 }, point_cloud);
             }
             else
             {
-                if(translation == '1')
+                if(translation == '2')
                 {
-                    apply_transformation(q90, t45, point_cloud);
+                    apply_transformation(q90, t90, point_cloud);
+                }
+                else
+                {
+                    if (translation == '1')
+                    {
+                        apply_transformation(q90, t45, point_cloud);
+                    }
                 }
             }
         }
@@ -356,8 +373,8 @@ int main(int args, char** argv)
         std::cout<< "Error: Missing arguments\n";
         std::cout<< "Usage: input_dir ply_filename downscale rotation translation holes hole_radius noise outlier seed\n";
         std::cout<< "../ bun000 45 0 0 0 0 0 0 1\n"; // only downscale
-        std::cout<< "../ bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, 1% noise 5% outlier
-        std::cout<< "../ bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, 3% noise 20% outlier
+        std::cout<< "../ bun000 45 45 1 2 0.03 1 5 1\n"; // rotate, translate, 2 holes, of radius 0.03, 1% noise 5% outlier
+        std::cout<< "../ bun000 45 90 2 0 0.0 3 20 1\n"; // rotate, translate, no holes, of radius 0.0, 3% noise 20% outlier
     }
     // Getting the arguments
     std::string input_dir{argv[1]};
@@ -417,6 +434,8 @@ int main(int args, char** argv)
     std::string filename_src = filename+"_src";
     std::string filename_tgt = filename+"_tgt";
     LOG("Building source and target point clouds...");
+
+    //float scale = normalize(point_cloud_src);
     build_new_pointcloud(point_cloud_src, input_dir, filename_src, downscale, rotation, translation,
                          holes, radius, noise, 7, outlier, 2, seeds);
     build_new_pointcloud(point_cloud_tgt, input_dir, filename_tgt, downscale, 0, '0',

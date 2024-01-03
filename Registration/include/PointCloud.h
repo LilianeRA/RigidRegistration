@@ -16,32 +16,40 @@ class PointCloud
 		void setColor(const Eigen::Vector3d &color);
 		void build(int skipstep);
 		void saveInput(const std::string& testpath);
-		int createHole(double radius, int index);
 
-		Graphics* getGraphics(char point_or_hole);
+		const std::vector<Point*>& getPoints() const;
 
-    protected:
+		/*int createHole(double radius, int index);
+
+		const std::vector<Point*>& getNormalizedPoints() const;
+		const std::vector<Point*>& getDownscaledPoints() const;
+
+		Graphics* getGraphics(char point_or_hole) const;
+
+    protected:*/
 
     private:
 
-		TYPE type;
-		std::string filename;
-		std::string filepath;
+		TYPE type = TYPE::ERROR;
+		std::string filename{ "" };
+		std::string filepath{ "" };
+		Eigen::Vector3d color;
+
 		std::vector<Point*> originalVertices;
-		std::vector<Point*> downscaledVertices;
+		/*std::vector<Point*> downscaledVertices;
 		std::vector<Point*> normalizedVertices;
 		std::vector<Point*> drawholes;
-		Eigen::Vector3d color;
 		double scale; // of normalization
 
 		Graphics *pointgraphics;
-		Graphics *holegraphics;
+		Graphics *holegraphics;*/
 
-		int precision;
-		int skipstep;
+		int precision = 15;
+		int skipstep = 0;
+
 		void read();
-		void downscale();
-		void normalize();
+		/*void downscale();
+		void normalize();*/
 };
 
 #endif // POINTCLOUD_H

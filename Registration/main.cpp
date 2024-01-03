@@ -1,7 +1,14 @@
+#pragma warning(disable: 4710) // Suppress 'function ... not inlined' for Release builds
+#pragma warning(disable: 4711) // Suppress 'function ... selected fpr automatic inline expansion' for Release builds
+#pragma warning(disable: 4514) // Suppress '... unreferenced inline function has been removed'
+#pragma warning(push, 3)       // Set warning levels to a quieter level for the STL
+
 #include <iostream>
 #include <filesystem>
 #include <Eigen/Dense>
 #include <fstream>
+
+#pragma warning(pop)           // Restore warning levels for our code
 
 #include "pch.h"
 #include "CommandLineParser.h"
@@ -82,7 +89,7 @@ int main(int argc, char const** argv)
     size_t found = maindir.find("build");
     if (found != std::string::npos) 
         maindir = maindir.substr(0, found - 1);
-    std::cout << maindir << '\n';
+    std::cout << maindir << "\n";
 
     std::string keys =
         "{help h  |     | show help message}"   // optional, show help optional
@@ -239,8 +246,8 @@ int main(int argc, char const** argv)
         threads = parser.get<int>("threads");
     }
 
-    double trimming     = parser.get<double>("trimming");
-    int executionnumber = parser.get<int>("executionnumber");
+    //double trimming     = parser.get<double>("trimming");
+    //int executionnumber = parser.get<int>("executionnumber");
     bool useGT          = parser.get<bool>("useGT");
 
     std::string gtfilename("");
@@ -278,19 +285,19 @@ int main(int argc, char const** argv)
 
     }
 
-    const double alphacut = 45;
-    const double alphaellipse = 45;
-    const double kctsf = 10; //(nao usado)
-    const double sigmaN = 0;
-    const double stepK = 0.1;
+    //const double alphacut = 45;
+    //const double alphaellipse = 45;
+    //const double kctsf = 10; //(nao usado)
+    //const double sigmaN = 0;
+    //const double stepK = 0.1;
 
     if (!parser.check()) {
         parser.printErrors();
         return -1;
     }
 
-    /*
-    PRINT("******************************");
+    
+    PRINT("\n******************************");
     PRINT("mode       " << mode);
     PRINT("inputdir   " << inputdir);
     PRINT("outputdir  " << outputdir);
@@ -306,13 +313,13 @@ int main(int argc, char const** argv)
     PRINT("holeradius " << std::to_string(holeradius));
     PRINT("testname   " << testname);
     PRINT("threads    " << std::to_string(threads));
-    PRINT("trimming   " << std::to_string(trimming));
-    PRINT("executionnumber " << std::to_string(executionnumber));
+    //PRINT("trimming   " << std::to_string(trimming));
+    //PRINT("executionnumber " << std::to_string(executionnumber));
     PRINT("useGT      " << std::to_string(useGT));
     PRINT("gtfilename " << gtfilename);
     PRINT("sourcemesh " << sourcemesh);
     PRINT("targetmesh " << targetmesh);
-    PRINT("******************************");*/
+    PRINT("******************************\n");
 
 
     MethodsData* RR = new MethodsData(maindir, inputdir, outputdir, testname, threads);
@@ -322,6 +329,7 @@ int main(int argc, char const** argv)
     RR->setPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
     RR->saveParameters();
     RR->run();
+
     //SparseICP(argc, argv);
     
 

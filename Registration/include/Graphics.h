@@ -4,7 +4,7 @@
 #include "Point.h"
 #include <vector>
 
-class Graphics
+/*class Graphics
 {
     public:
         Graphics(double radius = 1.0);
@@ -19,6 +19,6 @@ class Graphics
     private:
 		std::vector<Point*> vertices;
 		double radius;
-};
+};*/
 
 #endif // GRAPHICS_H
