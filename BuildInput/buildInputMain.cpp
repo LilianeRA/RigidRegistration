@@ -209,7 +209,7 @@ void outliers(float outlier_percentage, const std::array<int, NUM_SEEDS> &seeds,
     Eigen::Vector3d outlier;
     while(counter_outliers < total_outliers) // select random outliers
     {
-        outlier = Eigen::Vector3d{random_number->m_DoubleRandom(), random_number->m_DoubleRandom(), random_number->m_DoubleRandom()};
+        outlier = Eigen::Vector3d{random_number->m_DoubleRandom(-1.0, 1.0), random_number->m_DoubleRandom(-1.0, 1.0), random_number->m_DoubleRandom(-1.0, 1.0)};
         outlier.normalize();                                // random unit directions. Forms a sphere shell.
         outlier = outlier*sphere_size*random_number->m_DoubleRandom() + centroid;   // sphere_size*ud(gen) is for filling the 3D sphere
         // Is it inside the bounding box? If yes, reject.
