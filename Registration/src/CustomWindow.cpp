@@ -16,11 +16,45 @@ void CustomWindow::SetSourcePointCloud(const PointCloud* pointcloud, const glm::
 	sourcePointCloudName = "Source";
 	SetPointCloud(pointcloud, sourcePointCloudName, color);
 }
+
 void CustomWindow::SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color)
 {
 	targetPointCloudName = "Target";
 	SetPointCloud(pointcloud, targetPointCloudName, color);
 }
+
+void CustomWindow::SetActiveMethod(const MethodsData* data)
+{
+	MethodsData::MODE mode;
+	MethodsData::METHOD method;
+	MethodsData::MATCH match;
+	MethodsData::ESTIMATION estimation;
+	data->getActiveMethod(mode, method, match, estimation);
+
+	methodConfig.clear();
+	methodConfig.push_back(std::pair<std::string, bool>("ICP", (method == MethodsData::METHOD::ICP ? true : false)));
+	methodConfig.push_back(std::pair<std::string, bool>("SWC", (method == MethodsData::METHOD::SWC ? true : false)));
+	methodConfig.push_back(std::pair<std::string, bool>("GMM", (method == MethodsData::METHOD::GMM ? true : false)));
+	methodConfig.push_back(std::pair<std::string, bool>("Super 4PCS", (method == MethodsData::METHOD::SUPER4PCS ? true : false)));
+	methodConfig.push_back(std::pair<std::string, bool>("Sparse ICP", (method == MethodsData::METHOD::SPARSEICP ? true : false)));
+
+
+	matchConfig.clear();
+	matchConfig.push_back(std::pair<std::string, bool>("ICP", (match == MethodsData::MATCH::ICP ? true : false)));
+	matchConfig.push_back(std::pair<std::string, bool>("GMM", (match == MethodsData::MATCH::GMM ? true : false)));
+	matchConfig.push_back(std::pair<std::string, bool>("CTSF", (match == MethodsData::MATCH::CTSF ? true : false)));
+	matchConfig.push_back(std::pair<std::string, bool>("LIEDIR", (match == MethodsData::MATCH::LIEDIR ? true : false)));
+	matchConfig.push_back(std::pair<std::string, bool>("LIEIND", (match == MethodsData::MATCH::LIEIND ? true : false)));
+	matchConfig.push_back(std::pair<std::string, bool>("SUPER4PCS", (match == MethodsData::MATCH::SUPER4PCS ? true : false)));
+
+
+	estimationConfig.clear();
+	estimationConfig.push_back(std::pair<std::string, bool>("ICP", (estimation == MethodsData::ESTIMATION::ICP ? true : false)));
+	estimationConfig.push_back(std::pair<std::string, bool>("GMM", (estimation == MethodsData::ESTIMATION::GMM ? true : false)));
+	estimationConfig.push_back(std::pair<std::string, bool>("SPARSEICP", (estimation == MethodsData::ESTIMATION::SPARSEICP ? true : false)));
+	estimationConfig.push_back(std::pair<std::string, bool>("SUPER4PCS", (estimation == MethodsData::ESTIMATION::SUPER4PCS ? true : false)));
+}
+
 void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string &pointCloudName, const glm::vec3 &color) 
 {
 	if (!pointcloud) return;
@@ -39,8 +73,38 @@ void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string
 void CustomWindow::SetCustomWindow()
 {
 	ImGui::Begin("Custom Configuration");
-	ImGui::Checkbox("Show source point cloud:", &showSrcPointCloud);
-	ImGui::Checkbox("Show target point cloud:", &showTgtPointCloud);
+
+	ImGui::Text("Show Point Cloud:"); 
+	ImGui::SameLine();
+	ImGui::Checkbox("Source", &showSrcPointCloud);
+	ImGui::SameLine();
+	ImGui::Checkbox("Target", &showTgtPointCloud);
+
+	ImGui::Text("Method configuration ----------");
+	ImGui::Text("Method:");
+	for (const auto& method : methodConfig)
+	{
+		ImGui::SameLine();
+		ImGui::RadioButton(method.first.c_str(), method.second);
+	}
+	ImGui::Text("Match:");
+	for (const auto& match : matchConfig)
+	{
+		ImGui::SameLine();
+		ImGui::RadioButton(match.first.c_str(), match.second);
+	}
+	ImGui::Text("Estimation:");
+	for (const auto& estimation : estimationConfig)
+	{
+		ImGui::SameLine();
+		ImGui::RadioButton(estimation.first.c_str(), estimation.second);
+	}
+
+
+	if (ImGui::Button("Start Registration"))
+	{
+
+	}
 	ImGui::End();
 }
 

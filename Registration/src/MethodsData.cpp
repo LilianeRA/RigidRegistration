@@ -1,6 +1,7 @@
 #include "MethodsData.h"
 #include "DirHandler.h"
 #include "CustomWindow.h"
+#include "pch.h"
 #include <Eigen/Dense>
 #include <iostream>
 #include <fstream>
@@ -158,6 +159,24 @@ void MethodsData::setPointClouds(const std::string &sourcemesh, const std::strin
     }
 }
 
+void MethodsData::getActiveMethod(MODE &mode, METHOD& method, MATCH& match, ESTIMATION& estimation) const
+{
+    mode = this->mode;
+    method = this->method;
+    match = this->match;
+    estimation = this->estimation;
+}
+
+const PointCloud* MethodsData::getSourcePointCloud() const
+{
+    return this->sourcemesh;
+}
+
+const PointCloud* MethodsData::getTargetPointCloud() const
+{
+    return this->targetmesh;
+}
+
 
 void MethodsData::initInput(int downscalestep)
 {
@@ -187,7 +206,7 @@ void MethodsData::initInput(int downscalestep)
     }
 }
 
-void MethodsData::saveParameters()
+void MethodsData::saveParameters() const
 {
 	std::ofstream paramfile;
 	std::string paramname("parameters.txt");
@@ -241,24 +260,3 @@ void MethodsData::saveParameters()
 	paramfile.close();
 }
 
-void MethodsData::run()
-{
-    if (this->mode == MODE::MESHVIEW || this->mode == MODE::VIDEOVIEW)
-    {
-        /*WindowGLFW* glfw = new WindowGLFW(false, "View");
-		std::vector<Graphics*> graphics;
-		//graphics.push_back(sourcemesh->getGraphics('h'));
-		graphics.push_back(sourcemesh->getGraphics('p'));
-		graphics.push_back(targetmesh->getGraphics('p'));*/
-        //glfw->Run(&graphics);
-        
-        CustomWindow* window = new CustomWindow(false, "View");
-        window->InitializeWindow(); 
-        window->SetSourcePointCloud(sourcemesh, glm::vec3(0.5, 0.0, 0.0));
-        window->SetTargetPointCloud(targetmesh, glm::vec3(0.0, 0.0, 0.0));
-        window->Run();
-
-        //Visualizer3D *window = new Visualizer3D();
-        //window->Run();
-    }
-}

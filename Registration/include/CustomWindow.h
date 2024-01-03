@@ -2,7 +2,7 @@
 #define CUSTOMWINDOW_H
 
 #include "WindowGLFW.h"
-#include "PointCloud.h"
+#include "MethodsData.h"
 
 class CustomWindow : public WindowGLFW
 {
@@ -13,6 +13,7 @@ class CustomWindow : public WindowGLFW
 		void SetSourcePointCloud(const PointCloud* pointcloud, const glm::vec3& color);
 		void SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color);
 
+		void SetActiveMethod(const MethodsData *data);
 	protected:
 		virtual void SetCustomWindow() override;
 		virtual void CustomDraw() override;
@@ -25,6 +26,10 @@ class CustomWindow : public WindowGLFW
 		std::string targetPointCloudName{ "" };
 
 		std::vector<DrawableSpheres*> mOtherSpheres;
+
+		std::vector<std::pair<std::string, bool>> methodConfig;
+		std::vector<std::pair<std::string, bool>> matchConfig;
+		std::vector<std::pair<std::string, bool>> estimationConfig;
 
 
 		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);

@@ -6,26 +6,13 @@
 class MethodsData
 {
     public:
-        MethodsData(const std::string &maindir, const std::string &inputdir, const std::string &outputdir, const std::string &testname, int threads);
-        virtual ~MethodsData();
-
-        void setMode(const std::string &mode);
-        void setMethod(const std::string &method, const std::string &match, const std::string &estimation);
-        void setGTfile(const std::string &gtfilepath);
-        void setPointClouds(const std::string &sourcemesh, const std::string &targetmesh, int downscalestep, int totalholes, double holeradius);
-
-        void run();
-
-		void saveParameters();
-    protected:
-
-    private:
         enum class MODE
         {
             MESHBACTH, MESHVIEW,
             VIDEOBATCH, VIDEOVIEW,
             ERROR
         };
+
         enum class METHOD
         {
             ICP, SPARSEICP, SWC,
@@ -43,7 +30,23 @@ class MethodsData
             ICP, SPARSEICP, SUPER4PCS, GMM,
             ERROR
         };
+        MethodsData(const std::string &maindir, const std::string &inputdir, const std::string &outputdir, const std::string &testname, int threads);
+        virtual ~MethodsData();
 
+        void setMode(const std::string &mode);
+        void setMethod(const std::string &method, const std::string &match, const std::string &estimation);
+        void setGTfile(const std::string &gtfilepath);
+        void setPointClouds(const std::string &sourcemesh, const std::string &targetmesh, int downscalestep, int totalholes, double holeradius);
+
+        void getActiveMethod(MODE &mode, METHOD &method, MATCH &match, ESTIMATION &estimation) const;
+
+        const PointCloud* getSourcePointCloud() const;
+        const PointCloud* getTargetPointCloud() const;
+
+		void saveParameters() const;
+    protected:
+
+    private:
         MODE mode = MODE::ERROR; // meshbatch meshview videobatch videoview
 
         METHOD method = METHOD::ERROR;
