@@ -43,6 +43,8 @@ class MethodsData
         const PointCloud* getSourcePointCloud() const;
         const PointCloud* getTargetPointCloud() const;
 
+        void SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN);
+
 		void saveParameters() const;
     protected:
 
@@ -67,6 +69,10 @@ class MethodsData
 		/*int totalholes;
 		double holeradius;
 		std::vector<int> holesIndex; // the hole center is a point of the point cloud */
+
+        double alphacut = 0.0;
+        double alphaellipse = 0.0;
+        double sigmaN = 0.0;
 
         void initInput(int downscalestep);
 };

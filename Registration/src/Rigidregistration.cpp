@@ -14,32 +14,37 @@ RigidRegistration::~RigidRegistration()
     //dtor
 }
 
-void RigidRegistration::setMode(const std::string& mode)
+void RigidRegistration::SetMode(const std::string& mode)
 {
     data->setMode(mode);
 }
 
-void RigidRegistration::setMethod(const std::string& method, const std::string& match, const std::string& estimation)
+void RigidRegistration::SetMethod(const std::string& method, const std::string& match, const std::string& estimation)
 {
     data->setMethod(method, match, estimation);
 }
 
-void RigidRegistration::setGTfile(const std::string& gtfilepath)
+void RigidRegistration::SetGTfile(const std::string& gtfilepath)
 {
     data->setGTfile(gtfilepath);
 }
 
-void RigidRegistration::setPointClouds(const std::string& sourcemesh, const std::string& targetmesh, int downscalestep, int totalholes, double holeradius)
+void RigidRegistration::SetPointClouds(const std::string& sourcemesh, const std::string& targetmesh, int downscalestep, int totalholes, double holeradius)
 {
     data->setPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
 }
 
-void RigidRegistration::saveParameters()
+void RigidRegistration::SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN)
+{
+    data->SetTensorParameters(alphacut, alphaellipse, sigmaN);
+}
+
+void RigidRegistration::SaveParameters()
 {
     data->saveParameters();
 }
 
-void RigidRegistration::run()
+void RigidRegistration::Run()
 {
     MethodsData::MODE mode;
     MethodsData::METHOD method;
@@ -58,6 +63,21 @@ void RigidRegistration::run()
         window->SetSourcePointCloud(sourcemesh, glm::vec3(0.5, 0.0, 0.0));
         window->SetTargetPointCloud(targetmesh, glm::vec3(0.0, 0.0, 0.0));
         window->Run();
-
     }
+    else if (mode == MethodsData::MODE::MESHBACTH)
+    {
+        //Iteration();
+    }
+}
+
+void RigidRegistration::Iteration()
+{
+}
+
+void RigidRegistration::MatchPointClouds()
+{
+}
+
+void RigidRegistration::EstimateTransformation()
+{
 }

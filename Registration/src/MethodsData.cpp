@@ -1,4 +1,5 @@
 #include "MethodsData.h"
+#include "TensorEstimator.h"
 #include "DirHandler.h"
 #include "CustomWindow.h"
 #include "pch.h"
@@ -76,7 +77,7 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
     if(method.find("SICP")  != std::string::npos) {this->method = METHOD::SPARSEICP; std::cout<<"Method: Sparse ICP"<<std::endl;}
     if(method.find("S4PCS") != std::string::npos) {this->method = METHOD::SUPER4PCS; std::cout<<"Method: Super 4PCS"<<std::endl;}
 
-    if(match.find("ICP")    != std::string::npos) {this->match = MATCH::ICP;  std::cout<<"Match: ICP/Sparse ICP/SWC"<<std::endl;}
+    if(match.find("ICP")    != std::string::npos) {this->match = MATCH::ICP;  std::cout<<"Match: ICP"<<std::endl;}
     if(match.find("GMM")    != std::string::npos) {this->match = MATCH::GMM;  std::cout<<"Match: GMM"<<std::endl;}
     if(match.find("CTSF")   != std::string::npos) {this->match = MATCH::CTSF; std::cout<<"Match: CTSF"<<std::endl;}
     if(match.find("S4PCS")  != std::string::npos) {this->match = MATCH::SUPER4PCS; std::cout<<"Match: Super 4PCS"<<std::endl;}
@@ -177,6 +178,12 @@ const PointCloud* MethodsData::getTargetPointCloud() const
     return this->targetmesh;
 }
 
+void MethodsData::SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN)
+{
+    this->alphacut = alphacut;
+    this->alphaellipse = alphaellipse;
+    this->sigmaN = sigmaN;
+}
 
 void MethodsData::initInput(int downscalestep)
 {
@@ -186,9 +193,9 @@ void MethodsData::initInput(int downscalestep)
     if (this->mode == MODE::MESHVIEW || this->mode == MODE::MESHBACTH)
     {
         /// read ply or dat file
-        sourcemesh->setType(PointCloud::TYPE::SOURCE_DATA);
-        sourcemesh->setColor(Eigen::Vector3d(0.8, 0.0, 0.0));
-        sourcemesh->build(downscalestep);
+        sourcemesh->SetType(PointCloud::TYPE::SOURCE_DATA);
+        sourcemesh->SetColor(Eigen::Vector3d(0.8, 0.0, 0.0));
+        sourcemesh->Build(downscalestep);
         /*this->holesIndex.clear();
         if (this->totalholes > 0)
         {
@@ -197,12 +204,26 @@ void MethodsData::initInput(int downscalestep)
             if (this->totalholes >= 2)
                 this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 880));
         }*/
-        sourcemesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
+        sourcemesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
 
-        targetmesh->setType(PointCloud::TYPE::TARGET_MODEL);
-        targetmesh->setColor(Eigen::Vector3d(0.0, 0.0, 0.0));
-        targetmesh->build(downscalestep);
-        targetmesh->saveInput(DirHandler::JoinPaths(this->maindir, this->testname));
+        targetmesh->SetType(PointCloud::TYPE::TARGET_MODEL);
+        targetmesh->SetColor(Eigen::Vector3d(0.0, 0.0, 0.0));
+        targetmesh->Build(downscalestep);
+        targetmesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
+   
+    }
+
+    // Build the tensors for 
+    // Method       Estimation      Match       
+    // ICP          ICP             CTSF    -> ICP-CTSF
+    // ICP          SWC             ICP     -> SWC-ICP
+    // ICP          SWC             CTSF    -> SWC-CTSF
+    // SPARSEICP    SPARSEICP       ICP     -> Sparse ICP
+    // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
+    if (this->method == METHOD::ICP) 
+    {
+        TensorEstimator::Estimate(sourcemesh, false, alphacut, alphaellipse, sigmaN);
+
     }
 }
 

@@ -52,17 +52,17 @@ PointCloud::~PointCloud()
 	this->drawholes.clear();*/
 }
 
-void PointCloud::setType(TYPE type)
+void PointCloud::SetType(TYPE type)
 {
 	this->type = type;
 }
 
-void PointCloud::setColor(const Eigen::Vector3d &color)
+void PointCloud::SetColor(const Eigen::Vector3d &color)
 {
 	this->color = color;
 }
 
-void PointCloud::build(int skipstep)
+void PointCloud::Build(int skipstep)
 {
 	if (skipstep < 0)
 	{
@@ -71,7 +71,7 @@ void PointCloud::build(int skipstep)
 	}
 	this->skipstep = skipstep;
 
-	read();
+	Read();
 
 	/*if(this->skipstep >= 0)
 		downscale();
@@ -81,9 +81,35 @@ void PointCloud::build(int skipstep)
 	normalize();
 
 	this->pointgraphics->setPoints(normalizedVertices);*/
-}
 
-void PointCloud::read()
+	
+
+	for (int i = 0 ; i < originalVertices.size(); ++i)
+	{
+		std::vector<std::pair<int, double>> distances;
+		for (int j = 0; j < originalVertices.size(); ++j)
+		{
+			if (i == j) continue;
+			double euclideanDistance = Point::Distance(originalVertices.at(i), originalVertices.at(j), Point::DISTANCE_TYPE::EUCLIDEAN);
+			distances.push_back(std::pair<int, double>(j, euclideanDistance));
+		}
+		// descending order
+		std::stable_sort(distances.begin(), distances.end(), [](const std::pair<int, double>& a, const std::pair<int, double>& b) { return a.second < b.second; });
+		distanceList.push_back(distances);
+		//std::cout << i << "\t" << distances.front().first << " " << distances.front().second<< ", " << distances.back().first << " " << distances.back().second << "\n";
+
+	}
+
+	/*for (int i = 0; i < 1; i++) {
+		std::cout << "*" << i << "*";
+		for (int j = 0; j < distanceList.at(i).size(); j++) {
+			std::cout << distanceList.at(i).at(j).first << " (" << distanceList.at(i).at(j).second << ")";
+		}
+		std::cout << std::endl;
+	}*/
+}
+  
+void PointCloud::Read()
 {
 	//std::cout << "read: " << this->filepath <<std::endl;
     if(this->filepath.find(".ply") == std::string::npos &&
@@ -294,7 +320,26 @@ Graphics* PointCloud::getGraphics(char point_or_hole) const
 		return this->holegraphics;
 }*/
 
-const std::vector<Point*>& PointCloud::getPoints() const
+int PointCloud::GetTotalPoints() const
+{
+	return originalVertices.size();
+}
+
+const Point* PointCloud::GetFarthestPoint(int pointIndex) const
+{
+	return originalVertices.at(GetIndexFromDistanceList(pointIndex, -1));
+}
+const Point* PointCloud::GetPointFromDistanceList(int pointIndex, int listIndex) const
+{
+	return originalVertices.at(distanceList.at(pointIndex).at(listIndex).first);
+}
+const int PointCloud::GetIndexFromDistanceList(int pointIndex, int listIndex) const
+{
+	if(listIndex < 0) return distanceList.at(pointIndex).back().first; // *************
+	return distanceList.at(pointIndex).at(listIndex).first;
+}
+
+const std::vector<Point*>& PointCloud::GetPoints() const
 {
 	return originalVertices;
 }
@@ -309,7 +354,7 @@ void save_ply(const std::string &fullFilepath,
 	z_s.reserve(point_cloud.size());
 	for (unsigned int i = 0; i < point_cloud.size(); i++)
 	{
-		const auto p = point_cloud.at(i)->getPosition();
+		const auto p = point_cloud.at(i)->GetPosition();
 		x_s.emplace_back(p.x());
 		y_s.emplace_back(p.y());
 		z_s.emplace_back(p.z());
@@ -336,7 +381,7 @@ void save_ply(const std::string &fullFilepath,
 	z_s.clear();
 }
 
-void PointCloud::saveInput(const std::string & testpath)
+void PointCloud::SaveInput(const std::string & testpath)
 {
 	if (originalVertices.size() > 0 )
 	{
@@ -440,3 +485,4 @@ void PointCloud::saveInput(const std::string & testpath)
 	}
 	datfile.close();*/
 }
+

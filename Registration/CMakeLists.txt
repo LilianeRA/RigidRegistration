@@ -61,11 +61,14 @@ include_directories(${GLFW_INCLUDE_DIR})
 find_package(IMGUI REQUIRED)
 include_directories(${IMGUI_INCLUDE_DIR})
 
+find_package(GCG_RandomLib REQUIRED)
+include_directories(${GCG_RandomLib_INCLUDE_DIR})
+
 #--- My Visualizer3D. Will be optional
 find_package(Visualizer3D REQUIRED)
 include_directories(${Visualizer3D_INCLUDE_DIR})
 
-set(LIBRARIES ${IMGUI_LIBRARY} ${GLFW_LIBRARY} ${GLAD_LIBRARY} ${Visualizer3D_LIBRARY})
+set(LIBRARIES ${IMGUI_LIBRARY} ${GLFW_LIBRARY} ${GLAD_LIBRARY} ${Visualizer3D_LIBRARY} ${GCG_RandomLib_LIBRARY})
 
 #--- Build example
 include_directories(.)

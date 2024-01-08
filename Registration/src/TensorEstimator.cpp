@@ -1,0 +1,279 @@
+#include "TensorEstimator.h"
+#include "RandomGaussian.h"
+#include "pch.h"
+#include <numbers>
+
+#define MAX_IT 100
+#define K_INFLUENCE 0.01
+
+TensorEstimator::TensorEstimator()
+{
+    //ctor
+}
+
+TensorEstimator::~TensorEstimator()
+{
+    //dtor
+}
+
+void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regularization, const double limit_angle, const double ellipsoid_angle, const double sigmaN)
+{
+    RadialStructuringElement(pointCloud, sigmaN);
+    /*CoplanarStructuringElement(pointCloud, regularization, limit_angle, ellipsoid_angle, sigmaN);
+
+    double cp = 0, prevcp = -1;
+    int it = 0;
+    // As long as the cp is raising the coplanarSE is applyed
+    while (cp > prevcp && it < MAX_IT)
+    {
+        CoplanarStructuringElement(pointCloud, regularization, limit_angle, ellipsoid_angle, sigmaN);
+
+        prevcp = cp;
+        cp = 0;
+        const auto& points = pointCloud->GetPoints();
+        for (const Point *p : points) 
+        {
+            cp += p->GetTensorPlanarCoefficient();
+        }
+        cp /= points.size();
+
+        ++it;
+    }*/
+}
+
+void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, const double sigmaN)
+{
+    RandomGaussian* random_gauss = new RandomGaussian();
+    random_gauss->m_SetSeed(1, 1);
+
+    Eigen::Matrix3d tensor_sum;
+
+    /// Phase 1
+    const auto& points = pointCloud->GetPoints();
+    /*for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
+    {
+        Eigen::Vector3d posX = points.at(pointCounter)->GetPosition();
+        std::cout << posX.x() << " " << posX.y() << " " << posX.z() << "\n";
+    }*/
+    // for (int x = 0; x < pointCloud->nPoints; x++)
+    for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
+    {
+        //std::cout << "pointCounter " << pointCounter << "\n";
+        
+        // Initial tensor is a ball
+        tensor_sum = Eigen::Matrix3d::Zero(3, 3);
+
+        // Gets the farthest point in the neighborhood to set its influence
+        //pq = pointCloud->list[pointCloud->invertedList(x, pointCloud->k - 1)]->pos - pointCloud->list[x]->pos;
+        Eigen::Vector3d currentPoint = points.at(pointCounter)->GetPosition();
+        Eigen::Vector3d fathestPoint = pointCloud->GetFarthestPoint(pointCounter)->GetPosition();
+        Eigen::Vector3d pointToFathestPoint = fathestPoint - currentPoint;
+        // \sigma_p = \sqrt{ || pq_f ||^2 / ln(0.01)}
+        double max_ed2 = pointToFathestPoint.squaredNorm(); // the sum of the squared components
+        // Sigma is set so the farthest point has 1% of influence
+        double pointStandardDeviation = std::sqrt(-max_ed2 / std::log(K_INFLUENCE));
+        
+        /*
+        std::cout << "x " << pointCounter << ", " << pointCloud->GetIndexFromDistanceList(pointCounter, -1) << "\n";
+        std::cout << "pX  " << currentPoint.x() << " " << currentPoint.y() << " " << currentPoint.z() << "\n";
+        std::cout << "pXK " << fathestPoint.x() << " " << fathestPoint.y() << " " << fathestPoint.z() << "\n";
+        std::cout << "pq  " << pointToFathestPoint.x() << " " << pointToFathestPoint.y() << " " << pointToFathestPoint.z() << ", " << pointToFathestPoint.norm() << "\n";
+        std::cout << "max_ed2  " << max_ed2 << "\n";
+        std::cout << "log(mKInfluence) " << std::log(K_INFLUENCE) << " " << (-max_ed2 / std::log(K_INFLUENCE)) << "\n";
+        std::cout << std::setprecision(20) << "pointCloud->sigma " << pointStandardDeviation << "\n";
+        */
+        
+        // Run the neighborhood
+        // for (int i = 0; i < pointCloud->k; i++)
+        // Note: the distance list does not include the vertex itself. Its size is points.size()-1 
+        for (int neighborCounter = 0; neighborCounter < points.size()-1; ++neighborCounter) 
+        {
+            //pqAux = pointCloud->list[pointCloud->invertedList(x,i)]->pos - pointCloud->list[x]->pos;
+            Eigen::Vector3d neighborPoint = pointCloud->GetPointFromDistanceList(pointCounter, neighborCounter)->GetPosition();
+            Eigen::Vector3d pointToNeighborPoint = neighborPoint - currentPoint;
+            //std::cout << "pqAux " << pointToNeighborPoint(0) << " " << pointToNeighborPoint(1) << " " << pointToNeighborPoint(2) << "\n";
+
+            // Displace the point, so additive noise could be softened
+            // pqAux = pqAux * rd * sigmaN;
+            double rd = random_gauss->m_Random();
+            pointToNeighborPoint = pointToNeighborPoint * rd * sigmaN;
+            pointToFathestPoint = (neighborPoint + pointToNeighborPoint) - currentPoint;
+
+            double dist2 = pointToFathestPoint.squaredNorm();
+            
+            /*std::cout << "pXI " << neighborPoint(0) << " " << neighborPoint(1) << " " << neighborPoint(2) << "\n";
+            std::cout << "rd " << rd << "\n";
+            std::cout << "pqAux " << pointToNeighborPoint(0) << " " << pointToNeighborPoint(1) << " " << pointToNeighborPoint(2) << "\n";
+            std::cout << "pq    " << pointToFathestPoint(0) << " " << pointToFathestPoint(1) << " " << pointToFathestPoint(2) << "\n";
+            std::cout << "dist2 " << dist2 << "\n";*/
+            
+            if (std::abs(dist2) > 0.0000077) 
+            {
+                // T_p = \Sum{e^{-||pq||^2 / \sigma^2_p} \cdot pq \cdot pq^T}
+                // DIFF *****************************************************************
+                //gaussian no original era float: gaussian 0.99983131885528564453
+                //aqui é gaussian 0.99983134769956938381 
+                double gaussian = std::exp(-dist2 / (pointStandardDeviation * pointStandardDeviation));
+                Eigen::Matrix3d t = pointToFathestPoint * pointToFathestPoint.transpose();
+                for (int j = 0; j < 9; j++)
+                    tensor_sum(j) += gaussian * t(j);
+
+                /*std::cout << "t        " << t(0) << " " << t(1) << " " << t(2) << "\n";
+                std::cout << std::setprecision(20)<< "gaussian " << gaussian << "\n";
+                std::cout << "tensorsum" << "\n";
+                std::cout << tensor_sum << "\n";*/
+            }
+        }
+        
+        
+        double l2 = 0.0;
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                l2 += tensor_sum(i, j) * tensor_sum(i, j);
+        l2 = std::sqrt(l2);
+
+        if (std::abs(l2) < 0.0000077)
+        {
+            tensor_sum.setIdentity(3, 3);
+        }
+        points.at(pointCounter)->SetTensor(tensor_sum);
+        /*
+        std::cout << "l2    " << l2 << "\n";
+        std::cout << "updateTensor radial" << "\n";
+        std::cout << *points.at(pointCounter)->GetTensorMatrix() << "\n";
+        std::cout << *points.at(pointCounter)->GetTensorEigenValues() << "\n";
+        std::cout << *points.at(pointCounter)->GetTensorEigenVectors() << "\n";
+        std::cout << points.at(pointCounter)->GetNormal() << "\n";
+        */
+       
+    }
+    
+}
+
+void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, const bool regularization, const double limit_angle, const double ellipsoid_angle, const double sigmaN)
+{
+    /*RandomGaussian* random_gauss = new RandomGaussian();
+
+    Eigen::MatrixXd tensor_sum = Eigen::MatrixXd::Zero(9, pointCloud->GetTotalPoints());
+
+    /// Phase 2
+    const auto& points = pointCloud->GetPoints();
+    // for (int x = 0; x < pointCloud->nPoints; x++)
+    for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
+    {
+        //Mount a rotation matrix with the eigenvectors.
+        Eigen::Matrix3d* eigenVectors = points.at(pointCounter)->GetTensorEigenVectors();
+        if (!eigenVectors)
+        {
+            PRINT_ERROR("No tensor, no eigen vector");
+            exit(-1);
+        }
+        
+        eigenVectors->col(0).real().normalize();
+        eigenVectors->col(1).real().normalize();
+        eigenVectors->col(2).real().normalize();
+        // Gets the farthest point in the neighborhood to set its influence
+        Eigen::Vector3d currentPoint = points.at(pointCounter)->GetPosition();
+        Eigen::Vector3d fathestPoint = pointCloud->GetFarthestPoint(pointCounter)->GetPosition();
+        Eigen::Vector3d pointToFathestPoint = fathestPoint - currentPoint;
+
+        // \sigma_p = \sqrt{ || pq_f ||^2 / ln(0.01)}
+        double max_ed2 = pointToFathestPoint.squaredNorm(); // the sum of the squared components
+        double pointStandardDeviation = std::sqrt(-max_ed2 / std::log(K_INFLUENCE));
+
+        // Run the neighborhood
+        for (int neighborCounter = 0; neighborCounter < points.size(); ++neighborCounter)
+        {
+            // Displace in the normal direction, so additive noise could be softened
+            const Point* p = pointCloud->GetPointFromDistanceList(pointCounter, neighborCounter);
+            Eigen::Vector3d randomNormal = p->GetNormal() * random_gauss->m_Random() * sigmaN;
+            Eigen::Vector3d neighborPoint = p->GetPosition();
+            Eigen::Vector3d pointToNeighborPoint = neighborPoint + randomNormal - currentPoint;
+
+            // Allign the normal direction with the eigensystem
+            Eigen::Vector3d pq_alligned = *eigenVectors * pointToNeighborPoint;
+
+            // Creating the spherical coordinates correspondence
+            Eigen::Vector3d sphericalCoordCorresp;
+            sphericalCoordCorresp(0) = pq_alligned.norm(); // rho
+
+            double norm2pq = std::sqrt(pq_alligned(0) * pq_alligned(0) + pq_alligned(1) * pq_alligned(1));
+            double tan_spherical = pq_alligned(2) / norm2pq;
+
+            if (std::abs(norm2pq) < 0.0000077)
+                sphericalCoordCorresp(1) = std::numbers::pi / 2.0; // phi
+            else
+                sphericalCoordCorresp(1) = std::atan2(pq_alligned(2), norm2pq); //phi
+
+            if (std::abs(pq_alligned(0)) < 0.0000077)
+                sphericalCoordCorresp(2) = std::numbers::pi / 2.0; // theta
+            else
+                sphericalCoordCorresp(2) = std::atan2(pq_alligned(1), pq_alligned(0)); //theta
+
+
+            double d = std::tan(ellipsoid_angle);
+            double beta = std::atan2(2 * (d*d) * tan_spherical, (d*d) - tan_spherical * tan_spherical);
+
+            double cosbeta = std::cos(beta);
+            // Compute the vote vector
+            Eigen::Vector3d voteVector;
+            voteVector(0) = std::cos(sphericalCoordCorresp(2)) * cosbeta;
+            voteVector(1) = std::sin(sphericalCoordCorresp(2)) * cosbeta;
+            voteVector(2) = std::sin(beta);
+
+            // Constrain the conexion angle. Only values bellow may account.
+            if (limit_angle == std::numbers::pi / 2.0 || std::abs(tan_spherical) <= std::abs(std::tan(limit_angle)))  //restringe o angulo de conexao
+            {
+                // Compute the Elliptical distance
+                // If 45o, dist2 = rho cos(phi) (1 + tg² (z /|| x² + y²||))
+                double s = sphericalCoordCorresp(0) * std::cos(sphericalCoordCorresp(1)) * std::pow(1.0 + (2.0 - (1.0 / SQR(d))) * SQR(tan(sphericalCoordCorresp(1))), SQR(d) / (2.0 * SQR(d) - 1.0));
+                double f = std::exp(- ( (s / pointStandardDeviation)* (s / pointStandardDeviation)) );
+
+                //Bring back from the eigensystem
+                Eigen::Matrix3d transposeMatrix = eigenVectors->transpose();
+                Eigen::Vector3d vnl = transposeMatrix * voteVector;
+                Eigen::Matrix3d t = vnl * vnl.transpose();
+                for (int j = 0; j < 9; j++) 
+                    tensor_sum(j, pointCloud->GetIndexFromDistanceList(pointCounter, neighborCounter)) += f * t(j);
+            }
+        }
+    }
+
+
+    double l2 = 0.0;
+    double maxl2 = 0.0;
+    for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
+    {
+        l2 = tensor_sum.col(pointCounter).norm();
+        if (l2 > maxl2) maxl2 = l2;
+
+        Eigen::Matrix3d t;
+        if (std::abs(l2) < 0.0000077) {
+            t.setIdentity(3, 3);
+        }
+        else {
+            t(0, 0) = tensor_sum(0, pointCounter);
+            t(0, 1) = tensor_sum(1, pointCounter);
+            t(0, 2) = tensor_sum(2, pointCounter);
+            t(1, 0) = tensor_sum(3, pointCounter);
+            t(1, 1) = tensor_sum(4, pointCounter);
+            t(1, 2) = tensor_sum(5, pointCounter);
+            t(2, 0) = tensor_sum(6, pointCounter);
+            t(2, 1) = tensor_sum(7, pointCounter);
+            t(2, 2) = tensor_sum(8, pointCounter);
+        }
+        Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> solver(t);
+        Eigen::Vector3cd eval = solver.eigenvalues();
+        Eigen::Matrix3cd evec = solver.eigenvectors();
+
+        double planarCoefficient = std::real(((eval(1) - eval(0)) + (eval(1) - eval(0))) / (eval(0) + eval(1) + eval(2)));
+        
+        const auto& points = pointCloud->GetPoints();
+        if (!regularization || planarCoefficient > points.at(pointCounter)->GetTensorPlanarCoefficient())
+        {
+            points.at(pointCounter)->SetTensor(t);
+        }
+        //pointCloud->list[x]->normal = pointCloud->list[x]->tensor.eigenVectors.row(2).real();
+       
+    } */
+}

@@ -93,7 +93,7 @@ int main(int argc, char const** argv)
 
     std::string keys =
         "{help h  |     | show help message}"   // optional, show help optional
-        "{mode    | meshview | execution mode }"
+        "{mode    | meshbatch | execution mode }"
         "{inputdir  | . | full path }"
         "{outputdir | . | full path }"
         "{method  | ICP | string }"
@@ -285,11 +285,11 @@ int main(int argc, char const** argv)
 
     }
 
-    //const double alphacut = 45;
-    //const double alphaellipse = 45;
+    const double alphacut = 45;
+    const double alphaellipse = 45;
     //const double kctsf = 10; //(nao usado)
-    //const double sigmaN = 0;
-    //const double stepK = 0.1;
+    const double sigmaN = 0;
+    const double stepK = 0.1;
 
     if (!parser.check()) {
         parser.printErrors();
@@ -323,12 +323,13 @@ int main(int argc, char const** argv)
 
 
     RigidRegistration* RR = new RigidRegistration(maindir, inputdir, outputdir, testname, threads);
-    RR->setMode(mode);
-    RR->setMethod(method, match, estimation);
-    RR->setGTfile(gtfilename);
-    RR->setPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
-    RR->saveParameters();
-    RR->run();
+    RR->SetMode(mode);
+    RR->SetMethod(method, match, estimation);
+    RR->SetGTfile(gtfilename);
+    RR->SetPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
+    RR->SetTensorParameters(alphacut, alphaellipse, sigmaN);
+    RR->SaveParameters();
+    RR->Run();
 
     //SparseICP(argc, argv);
     

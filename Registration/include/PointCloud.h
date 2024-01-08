@@ -12,12 +12,16 @@ class PointCloud
         PointCloud(const std::string &filepath);
         virtual ~PointCloud();
 		
-		void setType(TYPE type);
-		void setColor(const Eigen::Vector3d &color);
-		void build(int skipstep);
-		void saveInput(const std::string& testpath);
+		void SetType(TYPE type);
+		void SetColor(const Eigen::Vector3d &color);
+		void Build(int skipstep);
+		void SaveInput(const std::string& testpath);
 
-		const std::vector<Point*>& getPoints() const;
+		int GetTotalPoints() const;
+		const Point* GetFarthestPoint(int pointIndex) const;
+		const Point* GetPointFromDistanceList(int pointIndex, int listIndex) const;
+		const int GetIndexFromDistanceList(int pointIndex, int listIndex) const;
+		const std::vector<Point*>& GetPoints() const;
 
 		/*int createHole(double radius, int index);
 
@@ -36,6 +40,7 @@ class PointCloud
 		Eigen::Vector3d color;
 
 		std::vector<Point*> originalVertices;
+		std::vector<std::vector<std::pair<int, double>>> distanceList; // list of distances between all vertices to all vertices. Index and distance
 		/*std::vector<Point*> downscaledVertices;
 		std::vector<Point*> normalizedVertices;
 		std::vector<Point*> drawholes;
@@ -47,7 +52,7 @@ class PointCloud
 		int precision = 15;
 		int skipstep = 0;
 
-		void read();
+		void Read();
 		/*void downscale();
 		void normalize();*/
 };

@@ -59,11 +59,11 @@ void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string
 {
 	if (!pointcloud) return;
 
-	const auto& points = pointcloud->getPoints();
+	const auto& points = pointcloud->GetPoints();
 	DrawableSpheres* ds = new DrawableSpheres(pointCloudName);
 	for (const auto& pt : points)
 	{
-		const Eigen::Vector3d &eigen_p = pt->getPosition();
+		const Eigen::Vector3d &eigen_p = pt->GetPosition();
 		glm::vec3 p{ eigen_p.x(), eigen_p.y(), eigen_p.z()};
 		ds->PushSphere(p, color, 0.01);
 	}
