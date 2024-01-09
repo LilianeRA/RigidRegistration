@@ -34,9 +34,9 @@ void RigidRegistration::SetPointClouds(const std::string& sourcemesh, const std:
     data->setPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
 }
 
-void RigidRegistration::SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN)
+void RigidRegistration::SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN)
 {
-    data->SetTensorParameters(alphacut, alphaellipse, sigmaN);
+    data->SetTensorParameters(alphacut_degrees, alphaellipse_degrees, sigmaN);
 }
 
 void RigidRegistration::SaveParameters()

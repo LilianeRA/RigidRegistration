@@ -36,6 +36,7 @@ class MethodsData
         void setMode(const std::string &mode);
         void setMethod(const std::string &method, const std::string &match, const std::string &estimation);
         void setGTfile(const std::string &gtfilepath);
+        void SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN);
         void setPointClouds(const std::string &sourcemesh, const std::string &targetmesh, int downscalestep, int totalholes, double holeradius);
 
         void getActiveMethod(MODE &mode, METHOD &method, MATCH &match, ESTIMATION &estimation) const;
@@ -43,7 +44,6 @@ class MethodsData
         const PointCloud* getSourcePointCloud() const;
         const PointCloud* getTargetPointCloud() const;
 
-        void SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN);
 
 		void saveParameters() const;
     protected:
@@ -70,9 +70,11 @@ class MethodsData
 		double holeradius;
 		std::vector<int> holesIndex; // the hole center is a point of the point cloud */
 
-        double alphacut = 0.0;
-        double alphaellipse = 0.0;
+        double alphacut_radians = 0.0;
+        double alphaellipse_radians = 0.0;
         double sigmaN = 0.0;
+
+        bool tensorParametersSeted = false;
 
         void initInput(int downscalestep);
 };

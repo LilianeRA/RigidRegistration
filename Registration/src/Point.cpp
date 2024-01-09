@@ -68,7 +68,7 @@ void Point::SetTensor(const Eigen::Matrix3d& tensorMatrix)
 Eigen::Vector3d Point::GetNormal() const
 {
 	if(this->tensor == nullptr) return Eigen::Vector3d(0.0,0.0,0.0);
-	return tensor->GetEigenVectors().row(2);
+	return tensor->GetEigenVectors().row(2).real();
 }
 
 double Point::GetTensorPlanarCoefficient() const

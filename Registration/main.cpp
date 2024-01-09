@@ -326,8 +326,8 @@ int main(int argc, char const** argv)
     RR->SetMode(mode);
     RR->SetMethod(method, match, estimation);
     RR->SetGTfile(gtfilename);
-    RR->SetPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
     RR->SetTensorParameters(alphacut, alphaellipse, sigmaN);
+    RR->SetPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
     RR->SaveParameters();
     RR->Run();
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <numbers>
 
 
 MethodsData::MethodsData(const std::string& maindir, const std::string& inputdir, const std::string& outputdir, const std::string& testname, int threads)
@@ -104,7 +105,6 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
         std::cout<<"Error: estimation function not recognized.\n";
         exit(EXIT_FAILURE);
     }
-
 }
 
 void MethodsData::setGTfile(const std::string &gtfilepath)
@@ -178,11 +178,13 @@ const PointCloud* MethodsData::getTargetPointCloud() const
     return this->targetmesh;
 }
 
-void MethodsData::SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN)
+void MethodsData::SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN)
 {
-    this->alphacut = alphacut;
-    this->alphaellipse = alphaellipse;
+    this->alphacut_radians = alphacut_degrees * (std::numbers::pi / 180.0);
+    this->alphaellipse_radians = alphaellipse_degrees * (std::numbers::pi / 180.0);
     this->sigmaN = sigmaN;
+
+    tensorParametersSeted = true;
 }
 
 void MethodsData::initInput(int downscalestep)
@@ -222,8 +224,13 @@ void MethodsData::initInput(int downscalestep)
     // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
     if (this->method == METHOD::ICP) 
     {
-        TensorEstimator::Estimate(sourcemesh, false, alphacut, alphaellipse, sigmaN);
-
+        if(tensorParametersSeted)
+            TensorEstimator::Estimate(sourcemesh, false, alphacut_radians, alphaellipse_radians, sigmaN);
+        else
+        {
+            PRINT_ERROR("Error: cant't initialize point clouds without estimating tensors. SetTensorParameters before SetPointClouds.");
+            exit(-1);
+        }
     }
 }
 

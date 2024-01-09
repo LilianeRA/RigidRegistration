@@ -24,9 +24,16 @@ void Tensor::Update(const Eigen::Matrix3d& tensorMatrix)
     /*std::cout << "eigenValues " << eigenValues.transpose() << "\n";
     std::cout << "eigenVecs \n";
     std::cout << eigenVecs << "\n";*/
+    
     eigenVecs.col(0) = eigenVecs.col(2);
     eigenVecs.col(2) = eigenVecs.col(0).cross(eigenVecs.col(1));
     eigenVectors = eigenVecs.transpose();
+
+    /*Eigen::Vector3d aux = eigenVecs.col(0);
+    eigenVecs.col(0) = eigenVecs.col(2);
+    eigenVecs.col(2) = aux;
+    eigenVectors = eigenVecs.transpose();*/
+
     /*std::cout << "eigenVectors after \n";
     std::cout << eigenVectors << "\n";*/
 

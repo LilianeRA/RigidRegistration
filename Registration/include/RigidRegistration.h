@@ -16,7 +16,7 @@ class RigidRegistration
         void SetGTfile(const std::string& gtfilepath);
         void SetPointClouds(const std::string& sourcemesh, const std::string& targetmesh, int downscalestep, int totalholes, double holeradius);
 
-        void SetTensorParameters(const double alphacut, const double alphaellipse, const double sigmaN);
+        void SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN);
 
         void SaveParameters();
 
