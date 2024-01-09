@@ -7,7 +7,7 @@
 #define MAX_IT 100
 #define K_INFLUENCE 0.01
 
-const std::string filepath{"E:/RigidRegistration/Mandar3/result/ICP/ICP_Original1/regCoplanarSE.txt"};
+//const std::string filepath{"E:/RigidRegistration/Mandar3/result/ICP/ICP_Original1/regCoplanarSE.txt"};
 
 TensorEstimator::TensorEstimator()
 {
@@ -21,7 +21,6 @@ TensorEstimator::~TensorEstimator()
 
 void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regularization, const double limit_angle, const double ellipsoid_angle, const double sigmaN)
 {
-
     RadialStructuringElement(pointCloud, sigmaN);
     CoplanarStructuringElement(pointCloud, regularization, limit_angle, ellipsoid_angle, sigmaN);
 
@@ -30,10 +29,10 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
     // As long as the cp is raising the coplanarSE is applyed
     while (cp > prevcp && it < MAX_IT)
     {
-        std::ofstream file;
+        /*std::ofstream file;
         file.open(filepath.c_str(), std::ofstream::out | std::ofstream::app);
         file << std::fixed << std::setprecision(15) << "it: " << it << " cp " << cp << " prevcp " << prevcp << "\n";
-        file.close();
+        file.close();*/
         CoplanarStructuringElement(pointCloud, regularization, limit_angle, ellipsoid_angle, sigmaN);
 
 
@@ -46,18 +45,17 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
         }
         cp /= points.size();
 
-        file.open(filepath.c_str(), std::ofstream::out | std::ofstream::app);
-        //std::cout << std::fixed << std::setprecision(15) << "it: " << it << " cp " << cp << "\n";
+        /*file.open(filepath.c_str(), std::ofstream::out | std::ofstream::app);
+        std::cout << std::fixed << std::setprecision(15) << "it: " << it << " cp " << cp << "\n";
         for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
         {
-            //std::cout << "n " << points.at(pointCounter)->GetNormal().transpose() << "\n";
-            //std::cout << *points.at(pointCounter)->GetTensorMatrix() << "\n\n";
+            std::cout << "n " << points.at(pointCounter)->GetNormal().transpose() << "\n";
+            std::cout << *points.at(pointCounter)->GetTensorMatrix() << "\n\n";
             file << "x " << pointCounter<< " normal " << points.at(pointCounter)->GetNormal().transpose() << "\n";
             file << *points.at(pointCounter)->GetTensorMatrix() << "\n";
         }
+        file.close();*/
         ++it;
-        file.close();
-        break;
     }
 }
 
@@ -360,5 +358,5 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
         //std::cout << "enter a number\n";
         //int nada;  std::cin >> nada;
     } 
-    file.close();
+    //file.close();
 }

@@ -224,8 +224,14 @@ void MethodsData::initInput(int downscalestep)
     // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
     if (this->method == METHOD::ICP) 
     {
-        if(tensorParametersSeted)
+        if (tensorParametersSeted)
+        {
+            PRINT("Estimating tensors for source point cloud...");
             TensorEstimator::Estimate(sourcemesh, false, alphacut_radians, alphaellipse_radians, sigmaN);
+            PRINT("Estimating tensors for target point cloud...");
+            TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN);
+            PRINT("Estimation done");
+        }
         else
         {
             PRINT_ERROR("Error: cant't initialize point clouds without estimating tensors. SetTensorParameters before SetPointClouds.");
