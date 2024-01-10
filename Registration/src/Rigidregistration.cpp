@@ -1,5 +1,6 @@
 #include "RigidRegistration.h"
 #include "DirHandler.h"
+#include "Estimators.h"
 #include <iostream>
 
 
@@ -27,6 +28,7 @@ void RigidRegistration::Run()
     const PointCloud* targetmesh = data->getTargetPointCloud();
     */
     MatchPointClouds();
+    estimationFunction();
 }
 
 void RigidRegistration::Setup()
@@ -45,6 +47,7 @@ void RigidRegistration::Setup()
         minIterationWeight = 1e-6;
 
         distanceFunction = Point::EuclideanDistance;
+        estimationFunction = Estimators::ICP_Besl;
     }
     // ICP-CTSF
     if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::CTSF && estimation == MethodsData::ESTIMATION::ICP)
@@ -83,11 +86,11 @@ void RigidRegistration::MatchPointClouds()
             }
         }
     }
-    std::for_each(tgt2src_correspondence.begin(), tgt2src_correspondence.end(),
+    /*std::for_each(tgt2src_correspondence.begin(), tgt2src_correspondence.end(),
         [](const int a) 
         {
             std::cout << a << " ";
-        });
+        });*/
 
 }
 

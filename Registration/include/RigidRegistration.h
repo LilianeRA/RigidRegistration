@@ -32,6 +32,7 @@ class RigidRegistration
         // Estimator *estimator = nullptr;   // ICP, SWC, Sparse ICP
 
         std::function< double(const Point*, const Point*, const double) > distanceFunction;
+        std::function< void() > estimationFunction;
 
         void Setup();
         void MatchPointClouds();
