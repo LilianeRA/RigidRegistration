@@ -25,11 +25,17 @@ class Point
 
 		double GetTensorPlanarCoefficient() const;
 		Eigen::Matrix3d* GetTensorEigenVectors() const;
-		// temporary
+
+		static double EuclideanDistance(const Point *p1, const Point *p2, const double weight);
+		static double CTSF_TensorDistance(const Point *p1, const Point *p2, const double weight);
+		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight);
+
+		// for computing the distances
 		Eigen::Matrix3d* GetTensorMatrix() const;
 		Eigen::Vector3d* GetTensorEigenValues() const;
 
-		static double Distance(const Point *p1, const Point *p2, const DISTANCE_TYPE t);
+		Eigen::Vector3d* GetTensorJValues() const;
+
 
     protected:
 

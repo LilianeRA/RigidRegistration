@@ -93,6 +93,14 @@ Eigen::Vector3d* Point::GetTensorEigenValues() const
 	return v;
 }
 
+Eigen::Vector3d* Point::GetTensorJValues() const
+{
+	if (this->tensor == nullptr) return nullptr;
+	Eigen::Vector3d* v = new Eigen::Vector3d();
+	*v = tensor->GetJValues();
+	return v;
+}
+
 Eigen::Matrix3d* Point::GetTensorEigenVectors() const
 {
 	if (this->tensor == nullptr) return nullptr;
@@ -101,8 +109,28 @@ Eigen::Matrix3d* Point::GetTensorEigenVectors() const
 	return m;
 }
 
-double Point::Distance(const Point* p1, const Point* p2, const DISTANCE_TYPE t)
+double Point::EuclideanDistance(const Point* p1, const Point* p2, const double weight)
+{
+	return (p1->GetPosition() - p2->GetPosition()).norm();
+}
+
+double Point::CTSF_TensorDistance(const Point* p1, const Point* p2, const double weight)
+{
+	//SQR((t1.eigenValues(0) - t2.eigenValues(0))) + SQR((t1.eigenValues(1) - t2.eigenValues(1))) + SQR((t1.eigenValues(2) - t2.eigenValues(2)));
+	const Eigen::Vector3d *eigenValues1 = p1->GetTensorEigenValues();
+	const Eigen::Vector3d *eigenValues2 = p2->GetTensorEigenValues();
+	return EuclideanDistance(p1, p2, weight) + weight* (*eigenValues1 - *eigenValues2).squaredNorm();
+}
+
+double Point::JDiff_TensorDistance(const Point* p1, const Point* p2, const double weight)
+{
+	const Eigen::Vector3d* jValues1 = p1->GetTensorJValues();
+	const Eigen::Vector3d* jValues2 = p2->GetTensorJValues();
+	return EuclideanDistance(p1, p2, weight) + weight * (*jValues1 - *jValues2).squaredNorm();
+}
+
+/*double Point::Distance(const Point* p1, const Point* p2, const DISTANCE_TYPE t)
 {
 	if (t == DISTANCE_TYPE::EUCLIDEAN) return (p1->GetPosition()-p2->GetPosition()).norm();
 	return 0.0;
-}
+}*/

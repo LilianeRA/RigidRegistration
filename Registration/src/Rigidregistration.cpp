@@ -1,12 +1,13 @@
 #include "RigidRegistration.h"
 #include "DirHandler.h"
-#include "CustomWindow.h"
+#include <iostream>
 
 
-RigidRegistration::RigidRegistration(const std::string& maindir, const std::string& inputdir, const std::string& outputdir, const std::string& testname, int threads)
+RigidRegistration::RigidRegistration(const MethodsData *methodsData)
 {
     //ctor
-	data = new MethodsData(maindir, inputdir, outputdir, testname, threads);
+	data = methodsData;
+    Setup();
 }
 
 RigidRegistration::~RigidRegistration()
@@ -14,39 +15,9 @@ RigidRegistration::~RigidRegistration()
     //dtor
 }
 
-void RigidRegistration::SetMode(const std::string& mode)
-{
-    data->setMode(mode);
-}
-
-void RigidRegistration::SetMethod(const std::string& method, const std::string& match, const std::string& estimation)
-{
-    data->setMethod(method, match, estimation);
-}
-
-void RigidRegistration::SetGTfile(const std::string& gtfilepath)
-{
-    data->setGTfile(gtfilepath);
-}
-
-void RigidRegistration::SetPointClouds(const std::string& sourcemesh, const std::string& targetmesh, int downscalestep, int totalholes, double holeradius)
-{
-    data->setPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);
-}
-
-void RigidRegistration::SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN)
-{
-    data->SetTensorParameters(alphacut_degrees, alphaellipse_degrees, sigmaN);
-}
-
-void RigidRegistration::SaveParameters()
-{
-    data->saveParameters();
-}
-
 void RigidRegistration::Run()
 {
-    MethodsData::MODE mode;
+    /*MethodsData::MODE mode;
     MethodsData::METHOD method;
     MethodsData::MATCH match;
     MethodsData::ESTIMATION estimation;
@@ -54,30 +25,69 @@ void RigidRegistration::Run()
 
     const PointCloud* sourcemesh = data->getSourcePointCloud();
     const PointCloud* targetmesh = data->getTargetPointCloud();
-
-    if (mode == MethodsData::MODE::MESHVIEW || mode == MethodsData::MODE::VIDEOVIEW)
-    {
-        CustomWindow* window = new CustomWindow(false, "View");
-        window->InitializeWindow();
-        window->SetActiveMethod(data);
-        window->SetSourcePointCloud(sourcemesh, glm::vec3(0.5, 0.0, 0.0));
-        window->SetTargetPointCloud(targetmesh, glm::vec3(0.0, 0.0, 0.0));
-        window->Run();
-    }
-    else if (mode == MethodsData::MODE::MESHBACTH)
-    {
-        //Iteration();
-    }
+    */
+    MatchPointClouds();
 }
 
-void RigidRegistration::Iteration()
+void RigidRegistration::Setup()
 {
+    MethodsData::MODE mode;
+    MethodsData::METHOD method;
+    MethodsData::MATCH match;
+    MethodsData::ESTIMATION estimation;
+    data->getActiveMethod(mode, method, match, estimation);
+
+
+    // original ICP
+    if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::ICP)
+    {
+        currIterationWeight = maxIterationWeight;
+        minIterationWeight = 1e-6;
+
+        distanceFunction = Point::EuclideanDistance;
+    }
+    // ICP-CTSF
+    if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::CTSF && estimation == MethodsData::ESTIMATION::ICP)
+    {
+        currIterationWeight = maxIterationWeight;
+        minIterationWeight = 1e-6;
+
+        distanceFunction = Point::CTSF_TensorDistance;
+    }
 }
+
 
 void RigidRegistration::MatchPointClouds()
 {
+    // building the correspondence list
+    tgt2src_correspondence.clear();
+
+    const PointCloud* sourcemesh = data->getSourcePointCloud();
+    const PointCloud* targetmesh = data->getTargetPointCloud();
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+    for (int targetCounter = 0; targetCounter < target_points.size(); ++targetCounter)
+    {
+        const Point* tgt_pt = target_points.at(targetCounter);
+        tgt2src_correspondence.push_back(targetCounter);
+
+        double distance = DBL_MAX;
+        for (int sourceCounter = 0; sourceCounter < source_points.size(); ++sourceCounter)
+        {
+            const Point* src_pt = source_points.at(sourceCounter);
+            double d = distanceFunction(src_pt, tgt_pt, currIterationWeight);
+            if (d < distance)
+            {
+                distance = d;
+                tgt2src_correspondence.back() = sourceCounter;
+            }
+        }
+    }
+    std::for_each(tgt2src_correspondence.begin(), tgt2src_correspondence.end(),
+        [](const int a) 
+        {
+            std::cout << a << " ";
+        });
+
 }
 
-void RigidRegistration::EstimateTransformation()
-{
-}

@@ -13,7 +13,7 @@
 #include "pch.h"
 #include "CommandLineParser.h"
 #include "DirHandler.h"
-#include "RigidRegistration.h"
+#include "MethodsHandler.h"
 
 
 // For getting the current directory
@@ -322,7 +322,7 @@ int main(int argc, char const** argv)
     PRINT("******************************\n");
 
 
-    RigidRegistration* RR = new RigidRegistration(maindir, inputdir, outputdir, testname, threads);
+    MethodsHandler* RR = new MethodsHandler(maindir, inputdir, outputdir, testname, threads);
     RR->SetMode(mode);
     RR->SetMethod(method, match, estimation);
     RR->SetGTfile(gtfilename);

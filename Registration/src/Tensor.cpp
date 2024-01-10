@@ -84,6 +84,11 @@ const Eigen::Vector3d& Tensor::GetEigenValues()
     return eigenValues;
 }
 
+const Eigen::Vector3d& Tensor::GetJValues()
+{
+    return Eigen::Vector3d(J1, J2, J3);
+}
+
 const Eigen::Matrix3d& Tensor::GetEigenVectors()
 {
     return eigenVectors;

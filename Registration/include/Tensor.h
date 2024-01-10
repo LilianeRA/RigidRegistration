@@ -14,9 +14,9 @@ class Tensor
         double GetPlanarCoefficient();
         const Eigen::Matrix3d& GetEigenVectors();
 
-        //temporary
         const Eigen::Matrix3d& GetTensorMatrix();
-        const Eigen::Vector3d& GetEigenValues();
+        const Eigen::Vector3d& GetEigenValues(); // used when computing the CTSF distance
+        const Eigen::Vector3d& GetJValues(); // used when computing the CTSF distance
 
     protected:
 

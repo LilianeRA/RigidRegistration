@@ -90,7 +90,7 @@ void PointCloud::Build(int skipstep)
 		for (int j = 0; j < originalVertices.size(); ++j)
 		{
 			if (i == j) continue;
-			double euclideanDistance = Point::Distance(originalVertices.at(i), originalVertices.at(j), Point::DISTANCE_TYPE::EUCLIDEAN);
+			double euclideanDistance = Point::EuclideanDistance(originalVertices.at(i), originalVertices.at(j), 0.0);
 			distances.push_back(std::pair<int, double>(j, euclideanDistance));
 		}
 		// descending order
