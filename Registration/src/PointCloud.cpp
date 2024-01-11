@@ -1,10 +1,16 @@
 #include "PointCloud.h"
 #include "DirHandler.h"
+#include "Estimators.h"
 #include "happly.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <iomanip>      // std::setprecision
+
+PointCloud::PointCloud()
+{
+
+}
 
 PointCloud::PointCloud(const std::string& filepath)
 {
@@ -52,6 +58,23 @@ PointCloud::~PointCloud()
 	this->drawholes.clear();*/
 }
 
+PointCloud* PointCloud::Copy() const
+{
+	PointCloud* copyPointCloud = new PointCloud();
+	copyPointCloud->SetType(type);
+	copyPointCloud->SetColor(color);
+
+	std::copy(originalVertices.begin(), originalVertices.end(), std::back_inserter(copyPointCloud->originalVertices));
+	std::copy(distanceList.begin(), distanceList.end(), std::back_inserter(copyPointCloud->distanceList));
+
+	copyPointCloud->precision = precision;
+	copyPointCloud->skipstep = skipstep;
+	copyPointCloud->filename = filename;
+	copyPointCloud->filepath = filepath;
+
+	return copyPointCloud;
+}
+
 void PointCloud::SetType(TYPE type)
 {
 	this->type = type;
@@ -82,9 +105,13 @@ void PointCloud::Build(int skipstep)
 
 	this->pointgraphics->setPoints(normalizedVertices);*/
 
-	
+	SetDistanceList();
 
-	for (int i = 0 ; i < originalVertices.size(); ++i)
+}
+
+void PointCloud::SetDistanceList()
+{
+	for (int i = 0; i < originalVertices.size(); ++i)
 	{
 		std::vector<std::pair<int, double>> distances;
 		for (int j = 0; j < originalVertices.size(); ++j)
@@ -107,6 +134,7 @@ void PointCloud::Build(int skipstep)
 		}
 		std::cout << std::endl;
 	}*/
+
 }
   
 void PointCloud::Read()
@@ -329,10 +357,12 @@ const Point* PointCloud::GetFarthestPoint(int pointIndex) const
 {
 	return originalVertices.at(GetIndexFromDistanceList(pointIndex, -1));
 }
+
 const Point* PointCloud::GetPointFromDistanceList(int pointIndex, int listIndex) const
 {
 	return originalVertices.at(distanceList.at(pointIndex).at(listIndex).first);
 }
+
 const int PointCloud::GetIndexFromDistanceList(int pointIndex, int listIndex) const
 {
 	if(listIndex < 0) return distanceList.at(pointIndex).back().first; // *************
@@ -343,7 +373,6 @@ const std::vector<Point*>& PointCloud::GetPoints() const
 {
 	return originalVertices;
 }
-
 
 void save_ply(const std::string &fullFilepath,
 	const std::vector<Point*> point_cloud)
@@ -484,5 +513,29 @@ void PointCloud::SaveInput(const std::string & testpath)
 		datfile<<p->isRemoved()<<"\n";
 	}
 	datfile.close();*/
+}
+
+void PointCloud::ApplyTransformation(const Eigen::Affine3d& transformation)
+{
+	const Eigen::Vector3d centroid = Estimators::ComputeCenteroid(GetPoints());
+
+	//int i = 0;
+	for (Point* p : originalVertices)
+	{
+		p->Translate(-centroid);
+		p->Rotate(transformation);
+		p->Translate(centroid);
+
+		/*if (i < 10)
+			std::cout << i << ": " << p->GetPosition().transpose() << std::endl;
+		i++;*/
+		
+		Eigen::Matrix3d* tensorMatrix = p->GetTensorMatrix();
+		if (tensorMatrix)
+		{
+			Eigen::Matrix3d t = (transformation.rotation() * (*tensorMatrix)) * transformation.rotation().transpose();
+			p->SetTensor(t);
+		}
+	}
 }
 

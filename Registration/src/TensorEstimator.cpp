@@ -325,6 +325,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
             t(2, 1) = tensor_sum(7, pointCounter);
             t(2, 2) = tensor_sum(8, pointCounter);
         }
+        // eigenvalues are sorted in increasing order
         Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> solver(t);
         Eigen::Vector3d eval = solver.eigenvalues();
         //Eigen::Matrix3d evec = solver.eigenvectors();

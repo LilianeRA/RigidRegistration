@@ -12,16 +12,21 @@ class PointCloud
         PointCloud(const std::string &filepath);
         virtual ~PointCloud();
 		
+		PointCloud* Copy() const;
+
 		void SetType(TYPE type);
 		void SetColor(const Eigen::Vector3d &color);
 		void Build(int skipstep);
 		void SaveInput(const std::string& testpath);
+
+		void ApplyTransformation(const Eigen::Affine3d &transformation);
 
 		int GetTotalPoints() const;
 		const Point* GetFarthestPoint(int pointIndex) const;
 		const Point* GetPointFromDistanceList(int pointIndex, int listIndex) const;
 		const int GetIndexFromDistanceList(int pointIndex, int listIndex) const;
 		const std::vector<Point*>& GetPoints() const;
+
 
 		/*int createHole(double radius, int index);
 
@@ -33,6 +38,7 @@ class PointCloud
     protected:*/
 
     private:
+		PointCloud();
 
 		TYPE type = TYPE::ERROR;
 		std::string filename{ "" };
@@ -51,7 +57,8 @@ class PointCloud
 
 		int precision = 15;
 		int skipstep = 0;
-
+		
+		void SetDistanceList();
 		void Read();
 		/*void downscale();
 		void normalize();*/

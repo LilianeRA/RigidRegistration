@@ -222,7 +222,7 @@ void MethodsData::initInput(int downscalestep)
     // ICP          SWC             CTSF    -> SWC-CTSF
     // SPARSEICP    SPARSEICP       ICP     -> Sparse ICP
     // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
-    if (this->method == METHOD::ICP) 
+    if (this->match == MethodsData::MATCH::CTSF || estimation == MethodsData::ESTIMATION::SWC)
     {
         if (tensorParametersSeted)
         {

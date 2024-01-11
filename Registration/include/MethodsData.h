@@ -27,7 +27,7 @@ class MethodsData
         };
         enum class ESTIMATION
         {
-            ICP, SPARSEICP, SUPER4PCS, GMM,
+            ICP, SWC, SPARSEICP, SUPER4PCS, GMM,
             ERROR
         };
         MethodsData(const std::string &maindir, const std::string &inputdir, const std::string &outputdir, const std::string &testname, int threads);
