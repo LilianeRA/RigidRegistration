@@ -114,6 +114,7 @@ void RigidRegistration::Setup()
         minIterationWeight = 1e-6;
 
         distanceFunction = Point::CTSF_TensorDistance;
+        estimationFunction = Estimators::ICP_Besl;
     }
 }
 

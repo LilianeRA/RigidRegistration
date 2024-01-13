@@ -34,7 +34,7 @@ class MethodsData
         virtual ~MethodsData();
 
         void setMode(const std::string &mode);
-        void setMethod(const std::string &method, const std::string &match, const std::string &estimation);
+        void setMethod(const std::string &method, const std::string &match, const std::string &estimation, const double ctsf_percentage);
         void setGTfile(const std::string &gtfilepath);
         void SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN);
         void setPointClouds(const std::string &sourcemesh, const std::string &targetmesh, int downscalestep, int totalholes, double holeradius);
@@ -73,6 +73,7 @@ class MethodsData
         double alphacut_radians = 0.0;
         double alphaellipse_radians = 0.0;
         double sigmaN = 0.0;
+        double ctsf_percentage = 0.05; // 5% 
 
         bool tensorParametersSeted = false;
 

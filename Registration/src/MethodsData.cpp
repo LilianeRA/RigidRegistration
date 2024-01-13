@@ -70,7 +70,7 @@ void MethodsData::setMode(const std::string &mode)
 	}
 }
 
-void MethodsData::setMethod(const std::string &method, const std::string &match, const std::string &estimation)
+void MethodsData::setMethod(const std::string &method, const std::string &match, const std::string &estimation, const double ctsf_percentage)
 {
     if(method.find("ICP")   != std::string::npos) {this->method = METHOD::ICP; std::cout<<"Method: ICP"<<std::endl;}
     if(method.find("SWC")   != std::string::npos) {this->method = METHOD::SWC; std::cout<<"Method: SWC"<<std::endl;}
@@ -105,6 +105,7 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
         std::cout<<"Error: estimation function not recognized.\n";
         exit(EXIT_FAILURE);
     }
+    this->ctsf_percentage = ctsf_percentage;
 }
 
 void MethodsData::setGTfile(const std::string &gtfilepath)
@@ -168,6 +169,7 @@ void MethodsData::getActiveMethod(MODE &mode, METHOD& method, MATCH& match, ESTI
     estimation = this->estimation;
 }
 
+
 const PointCloud* MethodsData::getSourcePointCloud() const
 {
     return this->sourcemesh;
@@ -227,9 +229,9 @@ void MethodsData::initInput(int downscalestep)
         if (tensorParametersSeted)
         {
             PRINT("Estimating tensors for source point cloud...");
-            TensorEstimator::Estimate(sourcemesh, false, alphacut_radians, alphaellipse_radians, sigmaN);
+            TensorEstimator::Estimate(sourcemesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
             PRINT("Estimating tensors for target point cloud...");
-            TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN);
+            TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
             PRINT("Estimation done");
         }
         else

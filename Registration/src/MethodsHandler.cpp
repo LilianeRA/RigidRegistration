@@ -19,9 +19,9 @@ void MethodsHandler::SetMode(const std::string& mode)
     data->setMode(mode);
 }
 
-void MethodsHandler::SetMethod(const std::string& method, const std::string& match, const std::string& estimation)
+void MethodsHandler::SetMethod(const std::string& method, const std::string& match, const std::string& estimation, const double ctsf_percentage)
 {
-    data->setMethod(method, match, estimation);
+    data->setMethod(method, match, estimation, ctsf_percentage);
 }
 
 void MethodsHandler::SetGTfile(const std::string& gtfilepath)

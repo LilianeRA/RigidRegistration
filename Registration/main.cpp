@@ -114,6 +114,7 @@ int main(int argc, char const** argv)
         "{gtfilename | groundtruth.txt | full path }"
         "{sourcemesh | bunny000.ply | full path }"
         "{targetmesh | bunny045.ply | full path }"
+        "{ctsf_percentage   | 5.0 | percentage }"
         ;
 
     CommandLineParser parser(argc, argv, keys);
@@ -290,6 +291,7 @@ int main(int argc, char const** argv)
     //const double kctsf = 10; //(nao usado)
     const double sigmaN = 0;
     const double stepK = 0.1;
+    const double ctsf_percentage = parser.get<double>("ctsf_percentage")/100.0; 
 
     if (!parser.check()) {
         parser.printErrors();
@@ -324,7 +326,7 @@ int main(int argc, char const** argv)
 
     MethodsHandler* RR = new MethodsHandler(maindir, inputdir, outputdir, testname, threads);
     RR->SetMode(mode);
-    RR->SetMethod(method, match, estimation);
+    RR->SetMethod(method, match, estimation, ctsf_percentage);
     RR->SetGTfile(gtfilename);
     RR->SetTensorParameters(alphacut, alphaellipse, sigmaN);
     RR->SetPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);

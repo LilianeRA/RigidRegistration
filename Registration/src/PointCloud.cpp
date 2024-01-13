@@ -124,14 +124,23 @@ void PointCloud::SetDistanceList()
 		std::stable_sort(distances.begin(), distances.end(), [](const std::pair<int, double>& a, const std::pair<int, double>& b) { return a.second < b.second; });
 		distanceList.push_back(distances);
 		//std::cout << i << "\t" << distances.front().first << " " << distances.front().second<< ", " << distances.back().first << " " << distances.back().second << "\n";
-
 	}
 
-	/*for (int i = 0; i < 1; i++) {
+	/*for (int i = 0; i < 5; i++)
+	{
 		std::cout << "*" << i << "*";
-		for (int j = 0; j < distanceList.at(i).size(); j++) {
+		for (int j = 0; j < 44; j++) 
+		{
 			std::cout << distanceList.at(i).at(j).first << " (" << distanceList.at(i).at(j).second << ")";
 		}
+		std::cout << std::endl;
+	}*/
+
+	/*for (int i = 0; i < 5; i++)
+	{
+		std::cout << "*" << i << "* ";
+		for (int j = 0; j < 43; j++)
+			std::cout << GetIndexFromDistanceList(i, j) << " ";
 		std::cout << std::endl;
 	}*/
 
@@ -355,17 +364,31 @@ int PointCloud::GetTotalPoints() const
 
 const Point* PointCloud::GetFarthestPoint(int pointIndex) const
 {
+	if (pointIndex >= distanceList.size() || pointIndex < 0) return nullptr;
 	return originalVertices.at(GetIndexFromDistanceList(pointIndex, -1));
 }
 
 const Point* PointCloud::GetPointFromDistanceList(int pointIndex, int listIndex) const
 {
-	return originalVertices.at(distanceList.at(pointIndex).at(listIndex).first);
+	int ind = GetIndexFromDistanceList(pointIndex, listIndex);
+	if (ind < 0) return nullptr;
+	return originalVertices.at(ind);
 }
 
 const int PointCloud::GetIndexFromDistanceList(int pointIndex, int listIndex) const
 {
-	if(listIndex < 0) return distanceList.at(pointIndex).back().first; // *************
+	if (pointIndex >= distanceList.size() || pointIndex < 0)
+	{
+		return -INT_MAX;
+	}
+	if (listIndex < 0)
+	{
+		return distanceList.at(pointIndex).back().first; // *************
+	}
+	else if (listIndex >= distanceList.at(pointIndex).size()) // comparing int with unsigned int
+	{
+		return -INT_MAX;
+	}
 	return distanceList.at(pointIndex).at(listIndex).first;
 }
 
