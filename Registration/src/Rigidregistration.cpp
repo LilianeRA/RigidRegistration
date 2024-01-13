@@ -31,10 +31,13 @@ void RigidRegistration::Run()
     unsigned int currentErrorIterations = 0;
     double currentError = initialError;
     double previousError = initialError;
-    while (currIterationWeight > 0.0)
+    const int cout_precision = 6;
+    while (currIterationWeight > 0.0 && currentError > 1e-12)
     {
         if (std::abs(currIterationWeight - minIterationWeight) < 0.0000077 || currIterationWeight < minIterationWeight)
         {
+            std::cout << std::scientific << std::setprecision(cout_precision) << "Setting weight to zero: cur. weight: ";
+            std::cout << currIterationWeight << " <= " << minIterationWeight << " = min. weight\n";
             currIterationWeight = 0.0;
         }
 
@@ -49,16 +52,17 @@ void RigidRegistration::Run()
         // the method can be stuck improving the error in the 9th decimal. If this happens, it can do it up to 200 times.
         if (previousError - currentError > 1e-10 && currentErrorIterations < 200)  
         {
-            std::cout << std::setprecision(15) << "Error improved from " << previousError << " to " << currentError << std::endl;
+            std::cout << std::scientific << std::setprecision(cout_precision) << "Error improved from " << previousError << " to " << currentError << std::endl;
             // accept transformation
             targetmesh->ApplyTransformation(transformation);
         }
         else
         {
-            std::cout << std::setprecision(15) << "Error did not improved (" << previousError << " <= " << currentError <<"). " ;
+            std::cout << std::scientific << std::setprecision(cout_precision) << "Error did not improved (" << previousError << " <= " << currentError <<"). " ;
             if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::ICP)
             {
                 currIterationWeight = 0.0;
+                std::cout << "Stoping.\n";
             }
             else
             {
