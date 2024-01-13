@@ -1,6 +1,7 @@
 #include "RigidRegistration.h"
 #include "DirHandler.h"
 #include "Estimators.h"
+#include "pch.h"
 #include <iostream>
 #include <iomanip>
 
@@ -42,7 +43,8 @@ void RigidRegistration::Run()
         }
 
         MatchPointClouds();
-        const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence);
+        const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
+        std::cout << "Enter number: "; int nada; std::cin >> nada;
         ++currentErrorIterations;
 
         previousError = currentError;
@@ -95,6 +97,7 @@ void RigidRegistration::Run()
 
 void RigidRegistration::Setup()
 {
+    std::cout << "Setup\n";
     MethodsData::MODE mode;
     MethodsData::METHOD method;
     MethodsData::MATCH match;
@@ -120,8 +123,53 @@ void RigidRegistration::Setup()
         distanceFunction = Point::CTSF_TensorDistance;
         estimationFunction = Estimators::ICP_Besl;
     }
+    // SWC-ICP
+    if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::SWC)
+    {
+        currIterationWeight = maxIterationWeight;
+        minIterationWeight = 1e-6;
+
+        distanceFunction = Point::EuclideanDistance;
+        estimationFunction = Estimators::SWC_Akio;
+
+        // set correspondence list based on CTSF
+        if (!data->getSourcePointCloud()->IsCTSF_DistanceListSet() || !data->getTargetPointCloud()->IsCTSF_DistanceListSet())
+        {
+            PRINT_ERROR("Error: Need to set the CTSF distance list before running the SWC method.");
+            exit(-1);
+        }
+        SetTensorCorrespondenceList();
+        Estimators::SetTensorCorrespondenceList(data->getSourcePointCloud(), tgt2src_tensorCorrespondence);
+    }
 }
 
+void RigidRegistration::SetTensorCorrespondenceList()
+{
+    // building the correspondence list
+    tgt2src_tensorCorrespondence.clear();
+
+    const PointCloud* sourcemesh = data->getSourcePointCloud();
+    const PointCloud* targetmesh = data->getTargetPointCloud();
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+    for (unsigned int targetCounter = 0; targetCounter < target_points.size(); ++targetCounter)
+    {
+        const Point* tgt_pt = target_points.at(targetCounter);
+        tgt2src_tensorCorrespondence.push_back(targetCounter);
+
+        double distance = DBL_MAX;
+        for (unsigned int sourceCounter = 0; sourceCounter < source_points.size(); ++sourceCounter)
+        {
+            const Point* src_pt = source_points.at(sourceCounter);
+            double d = distanceFunction(src_pt, tgt_pt, 0.0);
+            if (d < distance)
+            {
+                distance = d;
+                tgt2src_tensorCorrespondence.back() = sourceCounter;
+            }
+        }
+    }
+}
 
 void RigidRegistration::MatchPointClouds()
 {

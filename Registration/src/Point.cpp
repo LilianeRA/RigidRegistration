@@ -114,6 +114,12 @@ double Point::EuclideanDistance(const Point* p1, const Point* p2, const double w
 	return (p1->GetPosition() - p2->GetPosition()).norm();
 }
 
+double Point::PureCTSF_TensorDistance(const Point* p1, const Point* p2)
+{
+	const Eigen::Vector3d* eigenValues1 = p1->GetTensorEigenValues();
+	const Eigen::Vector3d* eigenValues2 = p2->GetTensorEigenValues();
+	return (*eigenValues1 - *eigenValues2).squaredNorm();
+}
 double Point::CTSF_TensorDistance(const Point* p1, const Point* p2, const double weight)
 {
 	//SQR((t1.eigenValues(0) - t2.eigenValues(0))) + SQR((t1.eigenValues(1) - t2.eigenValues(1))) + SQR((t1.eigenValues(2) - t2.eigenValues(2)));

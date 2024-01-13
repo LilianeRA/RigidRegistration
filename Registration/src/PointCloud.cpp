@@ -66,6 +66,7 @@ PointCloud* PointCloud::Copy() const
 
 	std::copy(originalVertices.begin(), originalVertices.end(), std::back_inserter(copyPointCloud->originalVertices));
 	std::copy(distanceList.begin(), distanceList.end(), std::back_inserter(copyPointCloud->distanceList));
+	std::copy(PureCTSF_distanceList.begin(), PureCTSF_distanceList.end(), std::back_inserter(copyPointCloud->PureCTSF_distanceList));
 
 	copyPointCloud->precision = precision;
 	copyPointCloud->skipstep = skipstep;
@@ -111,6 +112,7 @@ void PointCloud::Build(int skipstep)
 
 void PointCloud::SetDistanceList()
 {
+	distanceList.clear();
 	for (int i = 0; i < originalVertices.size(); ++i)
 	{
 		std::vector<std::pair<int, double>> distances;
@@ -144,6 +146,26 @@ void PointCloud::SetDistanceList()
 		std::cout << std::endl;
 	}*/
 
+}
+
+
+void PointCloud::SetCTSF_DistanceList()
+{
+	PureCTSF_distanceList.clear();
+	for (int i = 0; i < originalVertices.size(); ++i)
+	{
+		std::vector<std::pair<int, double>> distances;
+		for (int j = 0; j < originalVertices.size(); ++j)
+		{
+			if (i == j) continue;
+			double tensorDistance = Point::PureCTSF_TensorDistance(originalVertices.at(i), originalVertices.at(j));
+			distances.push_back(std::pair<int, double>(j, tensorDistance));
+		}
+		// descending order
+		std::stable_sort(distances.begin(), distances.end(), [](const std::pair<int, double>& a, const std::pair<int, double>& b) { return a.second < b.second; });
+		PureCTSF_distanceList.push_back(distances);
+		//std::cout << i << "\t" << distances.front().first << " " << distances.front().second<< ", " << distances.back().first << " " << distances.back().second << "\n";
+	}
 }
   
 void PointCloud::Read()
@@ -395,6 +417,11 @@ const int PointCloud::GetIndexFromDistanceList(int pointIndex, int listIndex) co
 const std::vector<Point*>& PointCloud::GetPoints() const
 {
 	return originalVertices;
+}
+
+bool PointCloud::IsCTSF_DistanceListSet() const
+{
+	return (PureCTSF_distanceList.size() > 0 ? true : false);
 }
 
 void save_ply(const std::string &fullFilepath,

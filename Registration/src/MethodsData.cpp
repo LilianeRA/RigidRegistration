@@ -86,6 +86,7 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
     if(match.find("LIEIND") != std::string::npos) {this->match = MATCH::LIEIND; std::cout<<"Match: Lie Indirect"<<std::endl;}
 
     if(estimation.find("ICP")   != std::string::npos) {this->estimation = ESTIMATION::ICP; std::cout<<"Estimation: ICP"<<std::endl;}
+    if(estimation.find("SWC")   != std::string::npos) {this->estimation = ESTIMATION::SWC; std::cout<<"Estimation: SWC"<<std::endl;}
     if(estimation.find("GMM")   != std::string::npos) {this->estimation = ESTIMATION::GMM; std::cout<<"Estimation: GMM"<<std::endl;}
     if(estimation.find("SICP")  != std::string::npos) {this->estimation = ESTIMATION::SPARSEICP; std::cout<<"Estimation: Sparse ICP"<<std::endl;}
     if(estimation.find("S4PCS") != std::string::npos) {this->estimation = ESTIMATION::SUPER4PCS; std::cout<<"Estimation: Super 4PCS"<<std::endl;}
@@ -224,7 +225,7 @@ void MethodsData::initInput(int downscalestep)
     // ICP          SWC             CTSF    -> SWC-CTSF
     // SPARSEICP    SPARSEICP       ICP     -> Sparse ICP
     // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
-    if (this->match == MethodsData::MATCH::CTSF || estimation == MethodsData::ESTIMATION::SWC)
+    if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC)
     {
         if (tensorParametersSeted)
         {
@@ -233,6 +234,14 @@ void MethodsData::initInput(int downscalestep)
             PRINT("Estimating tensors for target point cloud...");
             TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
             PRINT("Estimation done");
+
+            if (estimation == MethodsData::ESTIMATION::SWC)
+            {
+                PRINT("For SWC estimation, setting the tensor distance list...");
+                sourcemesh->SetCTSF_DistanceList();
+                targetmesh->SetCTSF_DistanceList();
+                PRINT("Done");
+            }
         }
         else
         {

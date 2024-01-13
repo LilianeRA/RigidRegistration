@@ -18,6 +18,7 @@ class PointCloud
 		void SetColor(const Eigen::Vector3d &color);
 		void Build(int skipstep);
 		void SaveInput(const std::string& testpath);
+		void SetCTSF_DistanceList(); // for SWC
 
 		void ApplyTransformation(const Eigen::Affine3d &transformation);
 
@@ -26,6 +27,7 @@ class PointCloud
 		const Point* GetPointFromDistanceList(int pointIndex, int listIndex) const;
 		const int GetIndexFromDistanceList(int pointIndex, int listIndex) const;
 		const std::vector<Point*>& GetPoints() const;
+		bool IsCTSF_DistanceListSet() const;
 
 
 		/*int createHole(double radius, int index);
@@ -47,6 +49,7 @@ class PointCloud
 
 		std::vector<Point*> originalVertices;
 		std::vector<std::vector<std::pair<int, double>>> distanceList; // list of distances between all vertices to all vertices. Index and distance
+		std::vector<std::vector<std::pair<int, double>>> PureCTSF_distanceList; // for SWC
 		/*std::vector<Point*> downscaledVertices;
 		std::vector<Point*> normalizedVertices;
 		std::vector<Point*> drawholes;
