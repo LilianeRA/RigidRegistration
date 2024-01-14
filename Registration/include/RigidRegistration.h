@@ -37,16 +37,29 @@ class RigidRegistration
             const std::vector<unsigned int>& tgt2src_correspondence,
             const double weight) > estimationFunction;
 
+
+        std::function< double(const PointCloud*, const PointCloud*, 
+            const std::vector<unsigned int>&, const std::vector<unsigned int>& ,
+            const Eigen::Affine3d&, const double) > RMS_Error;
+
         void Setup();
         void MatchPointClouds();
 
         void SetTensorCorrespondenceList();
 
         static double RootMeanSquareOfTransformation(const PointCloud* sourcemesh, const PointCloud* targetmesh,
-            const std::vector<unsigned int>& tgt2src_correspondence, const Eigen::Affine3d &transformation);
+            const std::vector<unsigned int>& tgt2src_correspondence,
+            const std::vector<unsigned int>& tgt2src_tensorCorrespondence,
+            const Eigen::Affine3d &transformation, const double weight);
+
+        static double RootMeanSquareSWC(const PointCloud* sourcemesh, const PointCloud* targetmesh,
+            const std::vector<unsigned int>& tgt2src_correspondence,
+            const std::vector<unsigned int>& tgt2src_tensorCorrespondence,
+            const Eigen::Affine3d& transformation, const double weight);
 
         static double RootMeanSquare(const PointCloud* sourcemesh, const PointCloud* targetmesh,
             const std::vector<unsigned int>& tgt2src_correspondence);
+
 };
 
 #endif // RIGIDREGISTRATION_H
