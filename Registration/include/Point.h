@@ -21,6 +21,7 @@ class Point
 		void Rotate(const Eigen::Affine3d &rotation);		
 
 		void SetTensor(const Eigen::Matrix3d &tensorMatrix);
+		bool SetLieTensor();
 		Eigen::Vector3d GetNormal() const;
 
 		double GetTensorPlanarCoefficient() const;
@@ -32,6 +33,7 @@ class Point
 		static double EuclideanDistance(const Point *p1, const Point *p2, const double weight);
 		static double CTSF_TensorDistance(const Point *p1, const Point *p2, const double weight);
 		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight);
+		static double LieDirectDistance(const Point *p1, const Point *p2, const double weight);
 
 		// for computing the distances
 		Eigen::Matrix3d* GetTensorMatrix() const;

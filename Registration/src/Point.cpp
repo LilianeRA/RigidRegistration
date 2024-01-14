@@ -65,6 +65,13 @@ void Point::SetTensor(const Eigen::Matrix3d& tensorMatrix)
 	tensor->Update(tensorMatrix);
 }
 
+bool Point::SetLieTensor()
+{
+	if (this->tensor == nullptr) return false;
+	tensor->UpdateLie(position);
+	return true;
+}
+
 Eigen::Vector3d Point::GetNormal() const
 {
 	if(this->tensor == nullptr) return Eigen::Vector3d(0.0,0.0,0.0);
@@ -133,6 +140,12 @@ double Point::JDiff_TensorDistance(const Point* p1, const Point* p2, const doubl
 	const Eigen::Vector3d* jValues1 = p1->GetTensorJValues();
 	const Eigen::Vector3d* jValues2 = p2->GetTensorJValues();
 	return EuclideanDistance(p1, p2, weight) + weight * (*jValues1 - *jValues2).squaredNorm();
+}
+
+double Point::LieDirectDistance(const Point* p1, const Point* p2, const double weight)
+{
+	****
+	return EuclideanDistance(p1, p2, weight) + weight;
 }
 
 /*double Point::Distance(const Point* p1, const Point* p2, const DISTANCE_TYPE t)

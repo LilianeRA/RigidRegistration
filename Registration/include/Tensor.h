@@ -10,6 +10,7 @@ class Tensor
         virtual ~Tensor();
 	    
         void Update(const Eigen::Matrix3d& tensorMatrix);
+        void UpdateLie(const Eigen::Vector3d& point_position);
 
         double GetPlanarCoefficient();
         const Eigen::Matrix3d& GetEigenVectors();
@@ -18,6 +19,7 @@ class Tensor
         const Eigen::Vector3d& GetEigenValues(); // used when computing the CTSF distance
         const Eigen::Vector3d& GetJValues(); // used when computing the CTSF distance
 
+        const Eigen::Matrix4d& GetLieMatrix();
     protected:
 
     private:
@@ -34,6 +36,8 @@ class Tensor
         double J1 = 0.0;
         double J2 = 0.0;
         double J3 = 0.0;
+
+        Eigen::Matrix4d lieMatrix = Eigen::Matrix4d::Identity();
 };
 
 #endif // TENSOR_H

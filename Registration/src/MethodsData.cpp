@@ -225,7 +225,8 @@ void MethodsData::initInput(int downscalestep)
     // ICP          SWC             CTSF    -> SWC-CTSF
     // SPARSEICP    SPARSEICP       ICP     -> Sparse ICP
     // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
-    if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC)
+    if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC ||
+        this->match == MethodsData::MATCH::LIEDIR)
     {
         if (tensorParametersSeted)
         {
@@ -241,6 +242,11 @@ void MethodsData::initInput(int downscalestep)
                 sourcemesh->SetCTSF_DistanceList();
                 targetmesh->SetCTSF_DistanceList();
                 PRINT("Done");
+            }
+            if (this->match == MethodsData::MATCH::LIEDIR)
+            {
+                TensorEstimator::SetLieTensors(sourcemesh);
+                TensorEstimator::SetLieTensors(targetmesh);
             }
         }
         else

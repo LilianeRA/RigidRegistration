@@ -69,6 +69,20 @@ void Tensor::Update(const Eigen::Matrix3d& tensorMatrix)
     //setGlyphParameters();
 }
 
+void Tensor::UpdateLie(const Eigen::Vector3d& point_position)
+{
+    for (int i = 0; i < 3; i++) 
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            lieMatrix(i, j) = matrix(i, j);
+        }
+        lieMatrix(i, 3) = point_position(i);
+        lieMatrix(3, i) = 0.0;
+    }
+    lieMatrix(3, 3) = 1.0;
+}
+
 double Tensor::GetPlanarCoefficient()
 {
     return planarCoefficient;
@@ -87,6 +101,11 @@ const Eigen::Vector3d& Tensor::GetEigenValues()
 const Eigen::Vector3d& Tensor::GetJValues()
 {
     return Eigen::Vector3d(J1, J2, J3);
+}
+
+const Eigen::Matrix4d& Tensor::GetLieMatrix()
+{
+    return lieMatrix;
 }
 
 const Eigen::Matrix3d& Tensor::GetEigenVectors()
