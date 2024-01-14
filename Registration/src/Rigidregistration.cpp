@@ -130,12 +130,16 @@ void RigidRegistration::Setup()
         RMS_Error = RootMeanSquareOfTransformation;
     }
     // SWC-ICP
-    if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::SWC)
+    if ( method == MethodsData::METHOD::ICP && 
+        (match == MethodsData::MATCH::ICP || match == MethodsData::MATCH::CTSF) &&
+         estimation == MethodsData::ESTIMATION::SWC)
     {
         currIterationWeight = maxIterationWeight;
         minIterationWeight = 1e-6;
 
         distanceFunction = Point::EuclideanDistance;
+        if(match == MethodsData::MATCH::CTSF)
+            distanceFunction = Point::CTSF_TensorDistance;
         estimationFunction = Estimators::SWC_Akio;
 
         RMS_Error = RootMeanSquareSWC;
