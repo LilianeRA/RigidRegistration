@@ -19,7 +19,7 @@ Estimators::~Estimators()
 const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const PointCloud* targetmesh, 
     const std::vector<unsigned int>& tgt2src_correspondence, const double weight)
 {
-    std::cout << "ICP_Besl\n";
+    //std::cout << "ICP_Besl\n";
     // TODO: trimming
 
     // list of points from point cloud

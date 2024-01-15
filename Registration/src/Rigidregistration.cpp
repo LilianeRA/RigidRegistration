@@ -1,10 +1,15 @@
 #include "RigidRegistration.h"
+#include "TensorEstimator.h"
 #include "DirHandler.h"
 #include "Estimators.h"
 #include "pch.h"
 #include <iostream>
 #include <iomanip>
 
+void foo(const PointCloud*)
+{
+
+}
 
 RigidRegistration::RigidRegistration(const MethodsData *methodsData)
 {
@@ -36,6 +41,7 @@ void RigidRegistration::Run()
     const int cout_precision = 6;
     while (currIterationWeight > 0.0 && currentError > 1e-12)
     {
+        std::cout << currIterationWeight << "\n ";
         if (std::abs(currIterationWeight - minIterationWeight) < 0.0000077 || currIterationWeight < minIterationWeight)
         {
             std::cout << std::scientific << std::setprecision(cout_precision) << "Setting weight to zero: cur. weight: ";
@@ -43,13 +49,16 @@ void RigidRegistration::Run()
             currIterationWeight = 0.0;
         }
 
+        std::cout << "MatchPointClouds\n ";
         MatchPointClouds();
+        std::cout << "estimationFunction\n ";
         const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
         ++currentErrorIterations;
         ++currentIterations;
 
         previousError = currentError;
         // compute error
+        std::cout << "RMS_Error\n ";
         currentError = RMS_Error(sourcemesh, targetmesh, tgt2src_correspondence, tgt2src_tensorCorrespondence, transformation, currIterationWeight);
 
         std::cout << "It. " << currentIterations << ": ";
@@ -65,8 +74,8 @@ void RigidRegistration::Run()
             std::cout << std::scientific << std::setprecision(cout_precision) << "Error did not improved (" << previousError << " <= " << currentError <<"). " ;
             if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::ICP)
             {
-                currIterationWeight = 0.0;
                 std::cout << "Stoping.\n";
+                currIterationWeight = 0.0;
             }
             else
             {
@@ -78,13 +87,14 @@ void RigidRegistration::Run()
                 currentErrorIterations = 0;
             }
         }
+        std::cout << "End loop\n ";
     }
 
     // after the resgistration, compute the correspondent points
     distanceFunction = Point::EuclideanDistance;
     MatchPointClouds(); // updates the correspondence list, now based on euclidean distance
     currentError = RootMeanSquare(sourcemesh, targetmesh, tgt2src_correspondence);
-
+    /////////////////////////////////////////////// confira a matriz de transformacao. deve estar jogando os pontos pra longe
     unsigned int i = 0;
     unsigned int correspondences = 0;
     for (unsigned int t : tgt2src_correspondence) 
@@ -107,39 +117,55 @@ void RigidRegistration::Setup()
     data->getActiveMethod(mode, method, match, estimation);
 
 
-    // original ICP
-    if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::ICP)
+    // original ICP, ICP-CTSF
+    if (method == MethodsData::METHOD::ICP && estimation == MethodsData::ESTIMATION::ICP)
     {
         currIterationWeight = maxIterationWeight;
         minIterationWeight = 1e-6;
 
-        distanceFunction = Point::EuclideanDistance;
-        estimationFunction = Estimators::ICP_Besl;
-
-        RMS_Error = RootMeanSquareOfTransformation;
-    }
-    // ICP-CTSF
-    if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::CTSF && estimation == MethodsData::ESTIMATION::ICP)
-    {
-        currIterationWeight = maxIterationWeight;
-        minIterationWeight = 1e-6;
-
-        distanceFunction = Point::CTSF_TensorDistance;
-        estimationFunction = Estimators::ICP_Besl;
-
-        RMS_Error = RootMeanSquareOfTransformation;
-    }
-    // SWC-ICP
-    if ( method == MethodsData::METHOD::ICP && 
-        (match == MethodsData::MATCH::ICP || match == MethodsData::MATCH::CTSF) &&
-         estimation == MethodsData::ESTIMATION::SWC)
-    {
-        currIterationWeight = maxIterationWeight;
-        minIterationWeight = 1e-6;
-
-        distanceFunction = Point::EuclideanDistance;
-        if(match == MethodsData::MATCH::CTSF)
+        if (match == MethodsData::MATCH::ICP)               // ICP 
+        {
+            distanceFunction = Point::EuclideanDistance;
+            preMatchFunction = foo;
+        }
+        if (match == MethodsData::MATCH::CTSF)               // ICP-CTSF
+        {
             distanceFunction = Point::CTSF_TensorDistance;
+            preMatchFunction = foo;
+
+        }
+        if (match == MethodsData::MATCH::LIEDIR)             // ICP-LIEDIR
+        {
+            distanceFunction = Point::LieDirectDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieDirect;
+        }
+
+        estimationFunction = Estimators::ICP_Besl;
+
+        RMS_Error = RootMeanSquareOfTransformation;
+    }
+    // SWC-ICP, SWC-CTSF, SWC-LIEDIR
+    else if ( method == MethodsData::METHOD::ICP && estimation == MethodsData::ESTIMATION::SWC)
+    {
+        currIterationWeight = maxIterationWeight;
+        minIterationWeight = 1e-6;
+
+        if (match == MethodsData::MATCH::ICP)               // SWC-ICP
+        {
+            distanceFunction = Point::EuclideanDistance;
+            preMatchFunction = foo;
+        }
+        if(match == MethodsData::MATCH::CTSF)               // SWC-CTSF
+        {
+            distanceFunction = Point::CTSF_TensorDistance;
+            preMatchFunction = foo;
+        }
+        if(match == MethodsData::MATCH::LIEDIR)             // SWC-LIEDIR
+        {
+            distanceFunction = Point::LieDirectDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieDirect;
+        }
+
         estimationFunction = Estimators::SWC_Akio;
 
         RMS_Error = RootMeanSquareSWC;
@@ -188,8 +214,15 @@ void RigidRegistration::MatchPointClouds()
     // building the correspondence list
     tgt2src_correspondence.clear();
 
+    std::cout << "Getting meshes\n";
     const PointCloud* sourcemesh = data->getSourcePointCloud();
     const PointCloud* targetmesh = data->getTargetPointCloud();
+
+    std::cout << "preMatchFunctions\n";
+    preMatchFunction(sourcemesh);
+    preMatchFunction(targetmesh);
+
+    std::cout << "Getting points\n";
     const auto& source_points = sourcemesh->GetPoints();
     const auto& target_points = targetmesh->GetPoints();
     for (unsigned int targetCounter = 0; targetCounter < target_points.size(); ++targetCounter)
@@ -201,7 +234,7 @@ void RigidRegistration::MatchPointClouds()
         for (unsigned int sourceCounter = 0; sourceCounter < source_points.size(); ++sourceCounter)
         {
             const Point* src_pt = source_points.at(sourceCounter);
-            double d = distanceFunction(src_pt, tgt_pt, currIterationWeight);
+            double d = distanceFunction(src_pt, tgt_pt, currIterationWeight, false);
             if (d < distance)
             {
                 distance = d;
@@ -209,6 +242,11 @@ void RigidRegistration::MatchPointClouds()
             }
         }
     }
+    std::cout << "Done\n" << std::endl;
+    /*for (int i = 0; i < 5; i++)
+    {
+        std::cout << "i " << i << " " << tgt2src_correspondence.at(i) << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true) << std::endl;
+    }*/
 
     /*
     src2tgt_correspondence.clear();

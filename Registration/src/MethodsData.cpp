@@ -236,17 +236,20 @@ void MethodsData::initInput(int downscalestep)
             TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
             PRINT("Estimation done");
 
+            /*const auto& sp = sourcemesh->GetPoints();
+            const auto& tp = targetmesh->GetPoints();
+            for (int t_index = 0; t_index < 3; ++t_index)
+            {
+                std::cout << std::setprecision(15) << "modelListAux tensor " << t_index << "\n" << *sp.at(t_index)->GetTensorMatrix() << std::endl;
+                std::cout << "dataListAux  tensor " << t_index << "\n" << *tp.at(t_index)->GetTensorMatrix() << std::endl;
+            }*/
+            //int nada; std::cin >> nada;
             if (estimation == MethodsData::ESTIMATION::SWC)
             {
                 PRINT("For SWC estimation, setting the tensor distance list...");
                 sourcemesh->SetCTSF_DistanceList();
                 targetmesh->SetCTSF_DistanceList();
                 PRINT("Done");
-            }
-            if (this->match == MethodsData::MATCH::LIEDIR)
-            {
-                TensorEstimator::SetLieTensors(sourcemesh);
-                TensorEstimator::SetLieTensors(targetmesh);
             }
         }
         else

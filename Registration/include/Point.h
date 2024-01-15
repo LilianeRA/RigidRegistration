@@ -21,7 +21,7 @@ class Point
 		void Rotate(const Eigen::Affine3d &rotation);		
 
 		void SetTensor(const Eigen::Matrix3d &tensorMatrix);
-		bool SetLieTensor();
+		bool SetTensorLieDirect();
 		Eigen::Vector3d GetNormal() const;
 
 		double GetTensorPlanarCoefficient() const;
@@ -30,16 +30,17 @@ class Point
 		// not to be used in the match step.
 		static double PureCTSF_TensorDistance(const Point* p1, const Point* p2); // for SWC correspondence list during estimation
 		// for the match step
-		static double EuclideanDistance(const Point *p1, const Point *p2, const double weight);
-		static double CTSF_TensorDistance(const Point *p1, const Point *p2, const double weight);
-		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight);
-		static double LieDirectDistance(const Point *p1, const Point *p2, const double weight);
+		static double EuclideanDistance(const Point *p1, const Point *p2, const double weigh, const bool verbose = false);
+		static double CTSF_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
+		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
+		static double LieDirectDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 
 		// for computing the distances
 		Eigen::Matrix3d* GetTensorMatrix() const;
 		Eigen::Vector3d* GetTensorEigenValues() const;
-
 		Eigen::Vector3d* GetTensorJValues() const;
+
+		Eigen::Matrix4d* GetLieMatrix() const;
 
 
     protected:
