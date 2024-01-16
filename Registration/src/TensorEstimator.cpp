@@ -115,6 +115,45 @@ void TensorEstimator::SetTensorsLieIndirect(const PointCloud* pointCloud)
     }
 }
 
+void TensorEstimator::SetTensorsLieGong(const PointCloud* pointCloud)
+{
+    const auto& points = pointCloud->GetPoints();
+    for (const Point* point : points)
+    {
+        if (!point->SetTensorLieGong())
+        {
+            PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
+            exit(-1);
+        }
+    }
+}
+
+void TensorEstimator::SetTensorsLieCalvo(const PointCloud* pointCloud)
+{
+    const auto& points = pointCloud->GetPoints();
+    for (const Point* point : points)
+    {
+        if (!point->SetTensorLieCalvo())
+        {
+            PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
+            exit(-1);
+        }
+    }
+}
+
+void TensorEstimator::SetTensorsLieLovric(const PointCloud* pointCloud)
+{
+    const auto& points = pointCloud->GetPoints();
+    for (const Point* point : points)
+    {
+        if (!point->SetTensorLieLovric())
+        {
+            PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
+            exit(-1);
+        }
+    }
+}
+
 void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, const double sigmaN, const double ctsf_percentage)
 {
     RandomGaussian* random_gauss = new RandomGaussian();

@@ -12,6 +12,9 @@ class Tensor
         void Update(const Eigen::Matrix3d& tensorMatrix);
         void UpdateLieDirect(const Eigen::Vector3d& point_position);
         void UpdateLieIndirect(const Eigen::Vector3d& point_position);
+        void UpdateLieGong(const Eigen::Vector3d& point_position);
+        void UpdateLieCalvo(const Eigen::Vector3d& point_position);
+        void UpdateLieLovric(const Eigen::Vector3d& point_position);
 
         double GetPlanarCoefficient() const;
         const Eigen::Matrix3d& GetEigenVectors() const;

@@ -142,6 +142,55 @@ void Tensor::UpdateLieIndirect(const Eigen::Vector3d& point_position)
     lieMatrix = lieMatrix.log();
 }
 
+void Tensor::UpdateLieGong(const Eigen::Vector3d& point_position)
+{
+    Eigen::LLT<Eigen::Matrix3d> llt_of_A(matrix);
+    const Eigen::Matrix3d matrixL = llt_of_A.matrixL();
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            lieMatrix(i, j) = matrixL(i, j);
+        }
+        lieMatrix(i, 3) = point_position(i);
+        lieMatrix(3, i) = 0.0;
+    }
+    lieMatrix(3, 3) = 1.0;
+}
+
+void Tensor::UpdateLieCalvo(const Eigen::Vector3d& point_position)
+{
+    const Eigen::Matrix3d mean_mean_T = point_position * point_position.transpose();
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            lieMatrix(i, j) = matrix(i, j) + mean_mean_T(i, j);
+        }
+        lieMatrix(i, 3) = lieMatrix(3, i) = point_position(i);
+    }
+    lieMatrix(3, 3) = 1.0;
+}
+
+void Tensor::UpdateLieLovric(const Eigen::Vector3d& point_position)
+{
+    const Eigen::Matrix3d mean_mean_T = point_position * point_position.transpose();
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            lieMatrix(i, j) = matrix(i, j) + mean_mean_T(i, j);
+        }
+        lieMatrix(i, 3) = lieMatrix(3, i) = point_position(i);
+    }
+    lieMatrix(3, 3) = 1.0;
+    // |\Sigma|^{-2/(n+1)}, n = 3
+    // sqrt(|\Sigma|)
+    lieMatrix = std::sqrt(matrix.determinant())* lieMatrix;
+}
+
 double Tensor::GetPlanarCoefficient() const
 {
     return planarCoefficient;

@@ -84,6 +84,9 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
     if(match.find("S4PCS")  != std::string::npos) {this->match = MATCH::SUPER4PCS; std::cout<<"Match: Super 4PCS"<<std::endl;}
     if(match.find("LIEDIR") != std::string::npos) {this->match = MATCH::LIEDIR; std::cout<<"Match: Lie Direct"<<std::endl;}
     if(match.find("LIEIND") != std::string::npos) {this->match = MATCH::LIEIND; std::cout<<"Match: Lie Indirect"<<std::endl;}
+    if(match.find("GONG")   != std::string::npos) {this->match = MATCH::GONG; std::cout<<"Match: Lie Gong"<<std::endl;}
+    if(match.find("CALVO")  != std::string::npos) {this->match = MATCH::CALVO; std::cout<<"Match: Lie Calvo"<<std::endl;}
+    if(match.find("LOVRIC") != std::string::npos) {this->match = MATCH::LOVRIC; std::cout<<"Match: Lie Lovric"<<std::endl;}
 
     if(estimation.find("ICP")   != std::string::npos) {this->estimation = ESTIMATION::ICP; std::cout<<"Estimation: ICP"<<std::endl;}
     if(estimation.find("SWC")   != std::string::npos) {this->estimation = ESTIMATION::SWC; std::cout<<"Estimation: SWC"<<std::endl;}
@@ -223,13 +226,20 @@ void MethodsData::initInput(int downscalestep)
     // ICP          ICP             CTSF    -> ICP-CTSF
     // ICP          ICP             LIEDIR  -> ICP-LIEDIR
     // ICP          ICP             LIEIND  -> ICP-LIEIND
+    // ICP          ICP             GONG    -> ICP-GONG
+    // ICP          ICP             CALVO   -> ICP-CALVO
+    // ICP          ICP             LOVRIC  -> ICP-LOVRIC
     // 
     // ICP          SWC             ICP     -> SWC-ICP
     // ICP          SWC             CTSF    -> SWC-CTSF
     // ICP          SWC             LIEDIR  -> SWC-LIEDIR
     // ICP          SWC             LIEIND  -> SWC-LIEIND
+    // ICP          SWC             GONG    -> SWC-GONG
+    // ICP          SWC             CALVO   -> SWC-CALVO
+    // ICP          SWC             LOVRIC  -> SWC-LOVRIC
     if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC ||
-        this->match == MethodsData::MATCH::LIEDIR || this->match == MethodsData::MATCH::LIEIND)
+        this->match == MethodsData::MATCH::LIEDIR || this->match == MethodsData::MATCH::LIEIND ||
+        this->match == MethodsData::MATCH::GONG || this->match == MethodsData::MATCH::CALVO || this->match == MethodsData::MATCH::LOVRIC)
     {
         if (tensorParametersSeted)
         {

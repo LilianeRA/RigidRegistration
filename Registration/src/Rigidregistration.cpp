@@ -93,6 +93,7 @@ void RigidRegistration::Run()
 
     // after the resgistration, compute the correspondent points
     distanceFunction = Point::EuclideanDistance;
+    preMatchFunction = foo;
     MatchPointClouds(); // updates the correspondence list, now based on euclidean distance
     currentError = RootMeanSquare(sourcemesh, targetmesh, tgt2src_correspondence);
 
@@ -129,20 +130,40 @@ void RigidRegistration::Setup()
             distanceFunction = Point::EuclideanDistance;
             preMatchFunction = foo;
         }
-        if (match == MethodsData::MATCH::CTSF)               // ICP-CTSF
+        else if (match == MethodsData::MATCH::CTSF)               // ICP-CTSF
         {
             distanceFunction = Point::CTSF_TensorDistance;
             preMatchFunction = foo;
         }
-        if (match == MethodsData::MATCH::LIEDIR)             // ICP-LIEDIR
+        else if (match == MethodsData::MATCH::LIEDIR)             // ICP-LIEDIR
         {
             distanceFunction = Point::LieDirectDistance;
             preMatchFunction = TensorEstimator::SetTensorsLieDirect;
         }
-        if (match == MethodsData::MATCH::LIEIND)             // ICP-LIEIND
+        else if (match == MethodsData::MATCH::LIEIND)             // ICP-LIEIND
         {
             distanceFunction = Point::LieIndirectDistance;
             preMatchFunction = TensorEstimator::SetTensorsLieIndirect;
+        }
+        else if (match == MethodsData::MATCH::GONG)               // ICP-GONG
+        {
+            distanceFunction = Point::LieGongDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieGong;
+        }
+        else if (match == MethodsData::MATCH::CALVO)              // ICP-CALVO
+        {
+            distanceFunction = Point::LieCalvoDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieCalvo;
+        }
+        else if (match == MethodsData::MATCH::LOVRIC)             // ICP-LOVRIC
+        {
+            distanceFunction = Point::LieLovricDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieLovric;
+        }
+        else
+        {
+            std::cout<<"RigidRegistration::Setup(): Error: full method is not defined. Stopping\n";
+            exit(-1);
         }
 
         estimationFunction = Estimators::ICP_Besl;
@@ -160,20 +181,40 @@ void RigidRegistration::Setup()
             distanceFunction = Point::EuclideanDistance;
             preMatchFunction = foo;
         }
-        if(match == MethodsData::MATCH::CTSF)               // SWC-CTSF
+        else if(match == MethodsData::MATCH::CTSF)               // SWC-CTSF
         {
             distanceFunction = Point::CTSF_TensorDistance;
             preMatchFunction = foo;
         }
-        if(match == MethodsData::MATCH::LIEDIR)             // SWC-LIEDIR
+        else if(match == MethodsData::MATCH::LIEDIR)             // SWC-LIEDIR
         {
             distanceFunction = Point::LieDirectDistance;
             preMatchFunction = TensorEstimator::SetTensorsLieDirect;
         }
-        if (match == MethodsData::MATCH::LIEIND)             // SWC-LIEIND
+        else if (match == MethodsData::MATCH::LIEIND)             // SWC-LIEIND
         {
             distanceFunction = Point::LieIndirectDistance;
             preMatchFunction = TensorEstimator::SetTensorsLieIndirect;
+        }
+        else if (match == MethodsData::MATCH::GONG)               // SWC-GONG
+        {
+            distanceFunction = Point::LieGongDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieGong;
+        }
+        else if (match == MethodsData::MATCH::CALVO)              // SWC-CALVO
+        {
+            distanceFunction = Point::LieCalvoDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieCalvo;
+        }
+        else if (match == MethodsData::MATCH::LOVRIC)             // SWC-LOVRIC
+        {
+            distanceFunction = Point::LieLovricDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieLovric;
+        }
+        else
+        {
+            std::cout << "RigidRegistration::Setup(): Error: full method is not defined. Stopping\n";
+            exit(-1);
         }
 
         estimationFunction = Estimators::SWC_Akio;

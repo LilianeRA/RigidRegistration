@@ -15,19 +15,21 @@ class MethodsData
 
         enum class METHOD
         {
-            ICP, SPARSEICP, SWC,
-            SUPER4PCS, GMM,
+            ICP, SWC,
+            SPARSEICP, SUPER4PCS, GMM,
             ERROR
         };
         enum class MATCH
         {
-            ICP, CTSF, LIEDIR,
-            SUPER4PCS, GMM, LIEIND,
+            ICP, CTSF, 
+            LIEDIR, LIEIND, GONG, CALVO, LOVRIC,
+            SUPER4PCS, GMM,
             ERROR
         };
         enum class ESTIMATION
         {
-            ICP, SWC, SPARSEICP, SUPER4PCS, GMM,
+            ICP, SWC, 
+            SPARSEICP, SUPER4PCS, GMM,
             ERROR
         };
         MethodsData(const std::string &maindir, const std::string &inputdir, const std::string &outputdir, const std::string &testname, int threads);

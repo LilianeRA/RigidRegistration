@@ -1,6 +1,7 @@
 #include "Point.h"
 #include <iostream>
 #include <iomanip>
+#include <unsupported/Eigen/MatrixFunctions> // for matrix.log()
 
 Point::Point(double x, double y, double z)
 {
@@ -77,6 +78,27 @@ bool Point::SetTensorLieIndirect() const
 {
 	if (this->tensor == nullptr) return false;
 	tensor->UpdateLieIndirect(position);
+	return true;
+}
+
+bool Point::SetTensorLieGong() const
+{
+	if (this->tensor == nullptr) return false;
+	tensor->UpdateLieGong(position);
+	return true;
+}
+
+bool Point::SetTensorLieCalvo() const
+{
+	if (this->tensor == nullptr) return false;
+	tensor->UpdateLieCalvo(position);
+	return true;
+}
+
+bool Point::SetTensorLieLovric() const
+{
+	if (this->tensor == nullptr) return false;
+	tensor->UpdateLieLovric(position);
 	return true;
 }
 
@@ -179,12 +201,12 @@ double Point::LieIndirectDistance(const Point* p1, const Point* p2, const double
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
-		std::cout << "Point::LieDirectDistance: !lie1\n";
+		std::cout << "Point::LieIndirectDistance: !lie1\n";
 		exit(-1);
 	}
 	if (!lie2)
 	{
-		std::cout << "Point::LieDirectDistance: !lie2\n";
+		std::cout << "Point::LieIndirectDistance: !lie2\n";
 		exit(-1);
 	}
 	if (verbose)
@@ -195,5 +217,65 @@ double Point::LieIndirectDistance(const Point* p1, const Point* p2, const double
 		std::cout << "W*sub.norm() " << weight * (*lie1 - *lie2).norm() << std::endl;
 	}
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
+}
+
+double Point::LieGongDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
+{
+	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
+	if (!lie1)
+	{
+		std::cout << "Point::LieGongDistance: !lie1\n";
+		exit(-1);
+	}
+	if (!lie2)
+	{
+		std::cout << "Point::LieGongDistance: !lie2\n";
+		exit(-1);
+	}
+	Eigen::Matrix4d aux = lie1->inverse();
+	aux = aux * (*lie2);
+	aux = aux.log();
+	return weight * aux.norm(); // For matrices, norm() is the Frobenius norm.
+}
+
+double Point::LieCalvoDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
+{
+	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
+	if (!lie1)
+	{
+		std::cout << "Point::LieCalvoDistance: !lie1\n";
+		exit(-1);
+	}
+	if (!lie2)
+	{
+		std::cout << "Point::LieCalvoDistance: !lie2\n";
+		exit(-1);
+	}
+	Eigen::Matrix4d aux = lie1->inverse();
+	aux = aux * (*lie2);
+	aux = aux.log();
+	return weight * aux.norm(); // For matrices, norm() is the Frobenius norm.
+}
+
+double Point::LieLovricDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
+{
+	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
+	if (!lie1)
+	{
+		std::cout << "Point::LieLovricDistance: !lie1\n";
+		exit(-1);
+	}
+	if (!lie2)
+	{
+		std::cout << "Point::LieLovricDistance: !lie2\n";
+		exit(-1);
+	}
+	Eigen::Matrix4d aux = lie1->inverse();
+	aux = aux * (*lie2);
+	aux = aux.log();
+	return weight * aux.norm(); // For matrices, norm() is the Frobenius norm.
 }
 

@@ -25,6 +25,9 @@ class Point
 		// this is what differentiates the Lie approach (IE, DE, Gong, Calvo, Lovric). The result of this function is stored in "lieMatrix"
 		bool SetTensorLieDirect() const;
 		bool SetTensorLieIndirect() const;
+		bool SetTensorLieGong() const;
+		bool SetTensorLieCalvo() const;
+		bool SetTensorLieLovric() const;
 
 		double GetTensorPlanarCoefficient() const;
 		const Eigen::Matrix3d* GetTensorEigenVectors() const;
@@ -37,6 +40,9 @@ class Point
 		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double LieDirectDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double LieIndirectDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
+		static double LieGongDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
+		static double LieCalvoDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
+		static double LieLovricDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 
 		// for computing the distances
 		const Eigen::Matrix3d* GetTensorMatrix() const;

@@ -13,6 +13,9 @@ class TensorEstimator
             const double ellipsoid_angle, const double sigmaN, const double ctsf_percentage);
         static void SetTensorsLieDirect(const PointCloud* pointCloud);
         static void SetTensorsLieIndirect(const PointCloud* pointCloud);
+        static void SetTensorsLieGong(const PointCloud* pointCloud);
+        static void SetTensorsLieCalvo(const PointCloud* pointCloud);
+        static void SetTensorsLieLovric(const PointCloud* pointCloud);
     private:
 
         static void RadialStructuringElement(const PointCloud* pointCloud, const double sigmaN, const double ctsf_percentage);
