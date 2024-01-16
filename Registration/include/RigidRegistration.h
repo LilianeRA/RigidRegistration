@@ -21,8 +21,6 @@ class RigidRegistration
         double minIterationWeight = 1e-6;
         const double stepIterationWeight = 0.1;
 
-        int iterationCounter = 0;
-
         const double initialError = 1e10;
         double trimming = 1.0;
         int correspondences = 0; 
@@ -35,7 +33,7 @@ class RigidRegistration
         std::function< const Eigen::Affine3d(const PointCloud*, const PointCloud* , 
             const std::vector<unsigned int>&, const double ) > estimationFunction;
 
-        std::function< void(const PointCloud*) > preMatchFunction; // Only when using Lie Groups
+        std::function< void(const PointCloud*, const double) > preMatchFunction; // Only when using Lie Groups
 
         std::function< double(const PointCloud*, const PointCloud*, 
             const std::vector<unsigned int>&, const std::vector<unsigned int>& ,

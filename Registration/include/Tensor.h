@@ -10,11 +10,11 @@ class Tensor
         virtual ~Tensor();
 	    
         void Update(const Eigen::Matrix3d& tensorMatrix);
-        void UpdateLieDirect(const Eigen::Vector3d& point_position);
-        void UpdateLieIndirect(const Eigen::Vector3d& point_position);
-        void UpdateLieGong(const Eigen::Vector3d& point_position);
-        void UpdateLieCalvo(const Eigen::Vector3d& point_position);
-        void UpdateLieLovric(const Eigen::Vector3d& point_position);
+        void UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight);
+        void UpdateLieIndirect(const Eigen::Vector3d& point_position, const double weight);
+        void UpdateLieGong(const Eigen::Vector3d& point_position, const double weight);
+        void UpdateLieCalvo(const Eigen::Vector3d& point_position, const double weight);
+        void UpdateLieLovric(const Eigen::Vector3d& point_position, const double weight);
 
         double GetPlanarCoefficient() const;
         const Eigen::Matrix3d& GetEigenVectors() const;
@@ -24,6 +24,7 @@ class Tensor
         const Eigen::Vector3d& GetJValues() const; 
 
         const Eigen::Matrix4d& GetLieMatrix() const;
+        const Eigen::Vector4d& GetLieEigenValues() const; // used when computing the Lie distance
     protected:
 
     private:
@@ -42,6 +43,7 @@ class Tensor
         double J3 = 0.0;
 
         Eigen::Matrix4d lieMatrix = Eigen::Matrix4d::Identity();
+        Eigen::Vector4d lieEigenValues;
 };
 
 #endif // TENSOR_H

@@ -70,11 +70,12 @@ void Tensor::Update(const Eigen::Matrix3d& tensorMatrix)
     weight = planarCoefficient;
     //setGlyphParameters();
 }
+
 // This method os for embedding the multivariate Gaussians (aka CTSF) into a linear space
 // Please read the "Local Log-Euclidean Multivariate Gaussian Descriptor and Its Application to Image Classification".
 // Trust me, its worth it
 // "The first method, called direct embedding Log-Euclidean(DE - LogE), maps $A^{+}(n + 1)$ via matrix logarithm to the linear space $A(n + 1)$."
-void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
+void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight)
 {
     // A =
     //      L^{-T} \nu
@@ -84,7 +85,6 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
 
     const Eigen::Matrix3d ctsf_matrix_inverse = matrix.inverse();
     //std::cout << std::setprecision(15) << "ctsf_matrix_inverse\n" << ctsf_matrix_inverse << std::endl;
-    //std::cout << std::setprecision(15) << "m*m-1\n" << matrix*ctsf_matrix_inverse << std::endl;
     assert(std::abs( ((matrix * ctsf_matrix_inverse) - Eigen::Matrix3d::Identity()).norm()  ) < 0.000077 );
 
     Eigen::LLT<Eigen::Matrix3d> llt_of_A(ctsf_matrix_inverse);
@@ -92,17 +92,16 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
     /*std::cout << std::setprecision(15) << "S\n" << matrix << std::endl;
     std::cout << "mean " << point_position.transpose() << std::endl;
     std::cout << "Sinv\n" << ctsf_matrix_inverse << std::endl;
-    std::cout << "L\n" << matrixL << std::endl;
-    std::cout << std::setprecision(15) << "L\n" << matrixL << std::endl;
-    std::cout << std::setprecision(15) << "L*LT\n" << matrixL * matrixL.transpose() << std::endl;*/
+    std::cout << "L\n" << matrixL << std::endl;*/
     assert(std::abs(((matrixL * matrixL.transpose()) - ctsf_matrix_inverse).norm()) < 0.000077);
 
-    // L^{-T}
-    const Eigen::Matrix3d L_inverse_transpose = matrixL.inverse().transpose();
-    //std::cout << std::setprecision(15) << "L_inverse_transpose\n" << L_inverse_transpose << std::endl;
+    // \omega * L^{-T}
+    const Eigen::Matrix3d L_inverse_transpose = weight * matrixL.inverse().transpose();
+    /*std::cout << std::setprecision(15) << "weight " << weight << std::endl;
+    std::cout << std::setprecision(15) << "L_inverse_transpose\n" << L_inverse_transpose << std::endl;
 
-    //std::cout << "Linv\n" << matrixL.inverse() << std::endl;
-    //std::cout << "Linvtr\n" << L_inverse_transpose << std::endl;
+    std::cout << "Linv\n" << matrixL.inverse() << std::endl;
+    std::cout << "Linvtr\n" << L_inverse_transpose << std::endl;*/
 
     for (int i = 0; i < 3; i++) 
     {
@@ -118,13 +117,21 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
 
     lieMatrix = lieMatrix.log();
     //std::cout << "logA\n" << lieMatrix << std::endl;
+    
+
+    Eigen::SelfAdjointEigenSolver <Eigen::MatrixXd> solver(lieMatrix);
+    // eigenvalues are sorted in increasing order
+    lieEigenValues = solver.eigenvalues();
+    // we need it decreasing
+    std::swap(lieEigenValues.x(), lieEigenValues.w());
+    std::swap(lieEigenValues.y(), lieEigenValues.z());
     //int nada;  std::cin >> nada;
 }
 
 // "The second one, what we call indirect embedding Log-Euclidean(IE - LogE), first maps $A^{+}(n + 1)$ via the coset and
 // polar decomposition into the space of symmetric positive definite(SPD) matrices, $Sym^{+}(n + 1)$, and then into the 
 // linear space $Sym(n + 1)$ by the Log - Euclidean framework."
-void Tensor::UpdateLieIndirect(const Eigen::Vector3d& point_position)
+void Tensor::UpdateLieIndirect(const Eigen::Vector3d& point_position, const double weight)
 {
     const Eigen::Matrix3d mean_mean_T = point_position * point_position.transpose();
 
@@ -132,7 +139,7 @@ void Tensor::UpdateLieIndirect(const Eigen::Vector3d& point_position)
     {
         for (int j = 0; j < 3; j++)
         {
-            lieMatrix(i, j) = matrix(i, j) + mean_mean_T(i, j);
+            lieMatrix(i, j) = weight * matrix(i, j) + mean_mean_T(i, j);
         }
         lieMatrix(i, 3) = lieMatrix(3, i) = point_position(i);
     }
@@ -140,25 +147,40 @@ void Tensor::UpdateLieIndirect(const Eigen::Vector3d& point_position)
 
     lieMatrix = lieMatrix.sqrt();
     lieMatrix = lieMatrix.log();
+
+    Eigen::SelfAdjointEigenSolver <Eigen::MatrixXd> solver(lieMatrix);
+    // eigenvalues are sorted in increasing order
+    lieEigenValues = solver.eigenvalues();
+    // we need it decreasing
+    std::swap(lieEigenValues.x(), lieEigenValues.w());
+    std::swap(lieEigenValues.y(), lieEigenValues.z());
 }
 
-void Tensor::UpdateLieGong(const Eigen::Vector3d& point_position)
+void Tensor::UpdateLieGong(const Eigen::Vector3d& point_position, const double weight)
 {
     Eigen::LLT<Eigen::Matrix3d> llt_of_A(matrix);
     const Eigen::Matrix3d matrixL = llt_of_A.matrixL();
+    const double sqrt_weight = std::sqrt(weight);
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            lieMatrix(i, j) = matrixL(i, j);
+            lieMatrix(i, j) = sqrt_weight * matrixL(i, j);
         }
         lieMatrix(i, 3) = point_position(i);
         lieMatrix(3, i) = 0.0;
     }
     lieMatrix(3, 3) = 1.0;
+
+    Eigen::SelfAdjointEigenSolver <Eigen::MatrixXd> solver(lieMatrix);
+    // eigenvalues are sorted in increasing order
+    lieEigenValues = solver.eigenvalues();
+    // we need it decreasing
+    std::swap(lieEigenValues.x(), lieEigenValues.w());
+    std::swap(lieEigenValues.y(), lieEigenValues.z());
 }
 
-void Tensor::UpdateLieCalvo(const Eigen::Vector3d& point_position)
+void Tensor::UpdateLieCalvo(const Eigen::Vector3d& point_position, const double weight)
 {
     const Eigen::Matrix3d mean_mean_T = point_position * point_position.transpose();
 
@@ -166,14 +188,21 @@ void Tensor::UpdateLieCalvo(const Eigen::Vector3d& point_position)
     {
         for (int j = 0; j < 3; j++)
         {
-            lieMatrix(i, j) = matrix(i, j) + mean_mean_T(i, j);
+            lieMatrix(i, j) = weight * matrix(i, j) + mean_mean_T(i, j);
         }
         lieMatrix(i, 3) = lieMatrix(3, i) = point_position(i);
     }
     lieMatrix(3, 3) = 1.0;
+
+    Eigen::SelfAdjointEigenSolver <Eigen::MatrixXd> solver(lieMatrix);
+    // eigenvalues are sorted in increasing order
+    lieEigenValues = solver.eigenvalues();
+    // we need it decreasing
+    std::swap(lieEigenValues.x(), lieEigenValues.w());
+    std::swap(lieEigenValues.y(), lieEigenValues.z());
 }
 
-void Tensor::UpdateLieLovric(const Eigen::Vector3d& point_position)
+void Tensor::UpdateLieLovric(const Eigen::Vector3d& point_position, const double weight)
 {
     const Eigen::Matrix3d mean_mean_T = point_position * point_position.transpose();
 
@@ -181,14 +210,21 @@ void Tensor::UpdateLieLovric(const Eigen::Vector3d& point_position)
     {
         for (int j = 0; j < 3; j++)
         {
-            lieMatrix(i, j) = matrix(i, j) + mean_mean_T(i, j);
+            lieMatrix(i, j) = weight * matrix(i, j) + mean_mean_T(i, j);
         }
         lieMatrix(i, 3) = lieMatrix(3, i) = point_position(i);
     }
     lieMatrix(3, 3) = 1.0;
     // |\Sigma|^{-2/(n+1)}, n = 3
     // sqrt(|\Sigma|)
-    lieMatrix = std::sqrt(matrix.determinant())* lieMatrix;
+    lieMatrix = std::sqrt((weight * matrix).determinant()) * lieMatrix;
+
+    Eigen::SelfAdjointEigenSolver <Eigen::MatrixXd> solver(lieMatrix);
+    // eigenvalues are sorted in increasing order
+    lieEigenValues = solver.eigenvalues();
+    // we need it decreasing
+    std::swap(lieEigenValues.x(), lieEigenValues.w());
+    std::swap(lieEigenValues.y(), lieEigenValues.z());
 }
 
 double Tensor::GetPlanarCoefficient() const
@@ -214,6 +250,11 @@ const Eigen::Vector3d& Tensor::GetJValues() const
 const Eigen::Matrix4d& Tensor::GetLieMatrix() const
 {
     return lieMatrix;
+}
+
+const Eigen::Vector4d& Tensor::GetLieEigenValues() const
+{
+    return lieEigenValues;
 }
 
 const Eigen::Matrix3d& Tensor::GetEigenVectors() const

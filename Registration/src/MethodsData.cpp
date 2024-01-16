@@ -219,6 +219,8 @@ void MethodsData::initInput(int downscalestep)
         targetmesh->Build(downscalestep);
         targetmesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
    
+        std::cout << "Source: " << sourcemesh->GetTotalPoints() << " vertices" << std::endl;
+        std::cout << "Target: " << targetmesh->GetTotalPoints() << " vertices" << std::endl;
     }
 
     // Build the tensors for 
@@ -285,8 +287,7 @@ void MethodsData::saveParameters() const
     }
 	parampath = DirHandler::JoinPaths(parampath, paramname);
 
-	std::cout<<"Saving parameters in:"<<std::endl;
-	std::cout<<parampath<<std::endl;
+	std::cout<<"Saving parameters in: " << parampath << std::endl;
 
 	paramfile.open(parampath);
 	paramfile << "method=";

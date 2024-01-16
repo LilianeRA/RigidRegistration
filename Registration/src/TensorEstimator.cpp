@@ -90,24 +90,24 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
     //std::cout << "End of Estimation "; std::cin >> nada;
 }
 
-void TensorEstimator::SetTensorsLieDirect(const PointCloud* pointCloud)
+void TensorEstimator::SetTensorsLieDirect(const PointCloud* pointCloud, const double weight)
 {
     const auto& points = pointCloud->GetPoints();
     for(const Point *point : points)
     {
-        if (!point->SetTensorLieDirect())
+        if (!point->SetTensorLieDirect(weight))
         {
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);
         }
     }
 }
-void TensorEstimator::SetTensorsLieIndirect(const PointCloud* pointCloud)
+void TensorEstimator::SetTensorsLieIndirect(const PointCloud* pointCloud, const double weight)
 {
     const auto& points = pointCloud->GetPoints();
     for(const Point *point : points)
     {
-        if (!point->SetTensorLieIndirect())
+        if (!point->SetTensorLieIndirect(weight))
         {
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);
@@ -115,12 +115,12 @@ void TensorEstimator::SetTensorsLieIndirect(const PointCloud* pointCloud)
     }
 }
 
-void TensorEstimator::SetTensorsLieGong(const PointCloud* pointCloud)
+void TensorEstimator::SetTensorsLieGong(const PointCloud* pointCloud, const double weight)
 {
     const auto& points = pointCloud->GetPoints();
     for (const Point* point : points)
     {
-        if (!point->SetTensorLieGong())
+        if (!point->SetTensorLieGong(weight))
         {
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);
@@ -128,12 +128,12 @@ void TensorEstimator::SetTensorsLieGong(const PointCloud* pointCloud)
     }
 }
 
-void TensorEstimator::SetTensorsLieCalvo(const PointCloud* pointCloud)
+void TensorEstimator::SetTensorsLieCalvo(const PointCloud* pointCloud, const double weight)
 {
     const auto& points = pointCloud->GetPoints();
     for (const Point* point : points)
     {
-        if (!point->SetTensorLieCalvo())
+        if (!point->SetTensorLieCalvo(weight))
         {
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);
@@ -141,12 +141,12 @@ void TensorEstimator::SetTensorsLieCalvo(const PointCloud* pointCloud)
     }
 }
 
-void TensorEstimator::SetTensorsLieLovric(const PointCloud* pointCloud)
+void TensorEstimator::SetTensorsLieLovric(const PointCloud* pointCloud, const double weight)
 {
     const auto& points = pointCloud->GetPoints();
     for (const Point* point : points)
     {
-        if (!point->SetTensorLieLovric())
+        if (!point->SetTensorLieLovric(weight))
         {
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);

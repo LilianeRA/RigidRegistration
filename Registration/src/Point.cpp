@@ -67,38 +67,38 @@ void Point::SetTensor(const Eigen::Matrix3d& tensorMatrix)
 	tensor->Update(tensorMatrix);
 }
 
-bool Point::SetTensorLieDirect() const
+bool Point::SetTensorLieDirect(const double weight) const
 {
 	if (this->tensor == nullptr) return false;
-	tensor->UpdateLieDirect(position);
+	tensor->UpdateLieDirect(position, weight);
 	return true;
 }
 
-bool Point::SetTensorLieIndirect() const
+bool Point::SetTensorLieIndirect(const double weight) const
 {
 	if (this->tensor == nullptr) return false;
-	tensor->UpdateLieIndirect(position);
+	tensor->UpdateLieIndirect(position, weight);
 	return true;
 }
 
-bool Point::SetTensorLieGong() const
+bool Point::SetTensorLieGong(const double weight) const
 {
 	if (this->tensor == nullptr) return false;
-	tensor->UpdateLieGong(position);
+	tensor->UpdateLieGong(position, weight);
 	return true;
 }
 
-bool Point::SetTensorLieCalvo() const
+bool Point::SetTensorLieCalvo(const double weight) const
 {
 	if (this->tensor == nullptr) return false;
-	tensor->UpdateLieCalvo(position);
+	tensor->UpdateLieCalvo(position, weight);
 	return true;
 }
 
-bool Point::SetTensorLieLovric() const
+bool Point::SetTensorLieLovric(const double weight) const
 {
 	if (this->tensor == nullptr) return false;
-	tensor->UpdateLieLovric(position);
+	tensor->UpdateLieLovric(position, weight);
 	return true;
 }
 
@@ -138,6 +138,12 @@ const Eigen::Matrix4d* Point::GetLieMatrix() const
 	return &tensor->GetLieMatrix();
 }
 
+const Eigen::Vector4d* Point::GetLieEigenValues() const
+{
+	if (this->tensor == nullptr) return nullptr;
+	return &tensor->GetLieEigenValues();
+}
+
 const Eigen::Matrix3d* Point::GetTensorEigenVectors() const
 {
 	if (this->tensor == nullptr) return nullptr;
@@ -173,7 +179,7 @@ double Point::JDiff_TensorDistance(const Point* p1, const Point* p2, const doubl
 
 double Point::LieDirectDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
 {
-	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	/*const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
@@ -193,11 +199,15 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 		std::cout << "W*sub.norm() " << weight * (*lie1 - *lie2).norm() << std::endl;
 	}
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
+	*/
+	const Eigen::Vector4d *lieEigenValue1 = p1->GetLieEigenValues();
+	const Eigen::Vector4d *lieEigenValue2 = p2->GetLieEigenValues();
+	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();
 }
 
 double Point::LieIndirectDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
 {
-	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	/*const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
@@ -217,11 +227,15 @@ double Point::LieIndirectDistance(const Point* p1, const Point* p2, const double
 		std::cout << "W*sub.norm() " << weight * (*lie1 - *lie2).norm() << std::endl;
 	}
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
+	*/
+	const Eigen::Vector4d* lieEigenValue1 = p1->GetLieEigenValues();
+	const Eigen::Vector4d* lieEigenValue2 = p2->GetLieEigenValues();
+	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();
 }
 
 double Point::LieGongDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
 {
-	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	/*const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
@@ -237,11 +251,15 @@ double Point::LieGongDistance(const Point* p1, const Point* p2, const double wei
 	aux = aux * (*lie2);
 	aux = aux.log();
 	return weight * aux.norm(); // For matrices, norm() is the Frobenius norm.
+	*/
+	const Eigen::Vector4d* lieEigenValue1 = p1->GetLieEigenValues();
+	const Eigen::Vector4d* lieEigenValue2 = p2->GetLieEigenValues();
+	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();
 }
 
 double Point::LieCalvoDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
 {
-	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	/*const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
@@ -257,11 +275,15 @@ double Point::LieCalvoDistance(const Point* p1, const Point* p2, const double we
 	aux = aux * (*lie2);
 	aux = aux.log();
 	return weight * aux.norm(); // For matrices, norm() is the Frobenius norm.
+	*/
+	const Eigen::Vector4d* lieEigenValue1 = p1->GetLieEigenValues();
+	const Eigen::Vector4d* lieEigenValue2 = p2->GetLieEigenValues();
+	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();
 }
 
 double Point::LieLovricDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
 {
-	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	/*const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
@@ -277,5 +299,9 @@ double Point::LieLovricDistance(const Point* p1, const Point* p2, const double w
 	aux = aux * (*lie2);
 	aux = aux.log();
 	return weight * aux.norm(); // For matrices, norm() is the Frobenius norm.
+	*/
+	const Eigen::Vector4d* lieEigenValue1 = p1->GetLieEigenValues();
+	const Eigen::Vector4d* lieEigenValue2 = p2->GetLieEigenValues();
+	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();
 }
 

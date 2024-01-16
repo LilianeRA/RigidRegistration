@@ -6,7 +6,7 @@
 #include <iostream>
 #include <iomanip>
 
-void foo(const PointCloud*)
+void foo(const PointCloud*, const double)
 {
 
 }
@@ -39,12 +39,16 @@ void RigidRegistration::Run()
     double currentError = initialError;
     double previousError = initialError;
     const int cout_precision = 6;
+    std::cout << "---- Starting iterations ----\n"; // its a good warning because some matches are heavy to compute.
     while (currIterationWeight > 0.0 && currentError > 1e-12)
     {
         if (std::abs(currIterationWeight - minIterationWeight) < 0.0000077 || currIterationWeight < minIterationWeight)
         {
-            if (match == MethodsData::MATCH::LIEDIR || match == MethodsData::MATCH::LIEIND)
+            if (match == MethodsData::MATCH::LIEDIR || match == MethodsData::MATCH::LIEIND || 
+                match == MethodsData::MATCH::GONG || match == MethodsData::MATCH::CALVO || match == MethodsData::MATCH::LOVRIC )
             {
+                // If you set the Lie Matrix to zero, it will get stuck while computing the log of the matrix (In LIEDIR).
+                // So, don't continue it you need to set the weight to zero.
                 break;
             }
             std::cout << std::scientific << std::setprecision(cout_precision) << "Setting weight to zero: cur. weight: ";
@@ -73,6 +77,7 @@ void RigidRegistration::Run()
         else
         {
             std::cout << std::scientific << std::setprecision(cout_precision) << "Error did not improved (" << previousError << " <= " << currentError <<"). " ;
+            currentError = previousError;
             if (method == MethodsData::METHOD::ICP && match == MethodsData::MATCH::ICP && estimation == MethodsData::ESTIMATION::ICP)
             {
                 std::cout << "Stoping.\n";
@@ -268,8 +273,8 @@ void RigidRegistration::MatchPointClouds()
     const PointCloud* sourcemesh = data->getSourcePointCloud();
     const PointCloud* targetmesh = data->getTargetPointCloud();
 
-    preMatchFunction(sourcemesh);
-    preMatchFunction(targetmesh);
+    preMatchFunction(sourcemesh, currIterationWeight);
+    preMatchFunction(targetmesh, currIterationWeight);
 
     const auto& source_points = sourcemesh->GetPoints();
     const auto& target_points = targetmesh->GetPoints();
@@ -299,7 +304,7 @@ void RigidRegistration::MatchPointClouds()
                 tgt2src_correspondence.back() = sourceCounter;
             }
         }
-    }	
+    }
     
     /*for (int i = 0; i < 5; i++)
     {

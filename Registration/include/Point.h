@@ -23,11 +23,11 @@ class Point
 		Eigen::Vector3d GetNormal() const;
 		void SetTensor(const Eigen::Matrix3d &tensorMatrix);
 		// this is what differentiates the Lie approach (IE, DE, Gong, Calvo, Lovric). The result of this function is stored in "lieMatrix"
-		bool SetTensorLieDirect() const;
-		bool SetTensorLieIndirect() const;
-		bool SetTensorLieGong() const;
-		bool SetTensorLieCalvo() const;
-		bool SetTensorLieLovric() const;
+		bool SetTensorLieDirect(const double weight) const;
+		bool SetTensorLieIndirect(const double weight) const;
+		bool SetTensorLieGong(const double weight) const;
+		bool SetTensorLieCalvo(const double weight) const;
+		bool SetTensorLieLovric(const double weight) const;
 
 		double GetTensorPlanarCoefficient() const;
 		const Eigen::Matrix3d* GetTensorEigenVectors() const;
@@ -50,6 +50,7 @@ class Point
 		const Eigen::Vector3d* GetTensorJValues() const;
 
 		const Eigen::Matrix4d* GetLieMatrix() const; // return the value stored for the Lie approach (Direct, Indirect, Gong, Calvo, Lovric)
+		const Eigen::Vector4d* GetLieEigenValues() const;
 
 
     protected:

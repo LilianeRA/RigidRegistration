@@ -198,7 +198,7 @@ void PointCloud::Read()
                     if(found != std::string::npos)
                     {
                         totalvertices = std::atoi(line.substr(found+15).c_str());
-                        std::cout<<"Total of vertices "<<totalvertices<<std::endl;
+                        //std::cout<<"Total of vertices "<<totalvertices<<std::endl;
                         continue;
                     }
 
@@ -260,7 +260,7 @@ void PointCloud::Read()
             std::cout<<"Dat file: "<< this->filepath<<std::endl;
         }
     }
-	std::cout<<"Vertices: "<<originalVertices.size()<<std::endl;
+	//std::cout<<"Vertices: "<<originalVertices.size()<<std::endl;
 }
 
 /*void PointCloud::downscale()
