@@ -97,7 +97,18 @@ void TensorEstimator::SetTensorsLieDirect(const PointCloud* pointCloud)
     {
         if (!point->SetTensorLieDirect())
         {
-            std::cout <<"    Error: no tensor for the point. Check if the CTSF tensor was estimated before.\n";
+            PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
+            exit(-1);
+        }
+    }
+}
+void TensorEstimator::SetTensorsLieIndirect(const PointCloud* pointCloud)
+{
+    const auto& points = pointCloud->GetPoints();
+    for(const Point *point : points)
+    {
+        if (!point->SetTensorLieIndirect())
+        {
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);
         }

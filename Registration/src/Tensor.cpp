@@ -120,9 +120,27 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
     //std::cout << "logA\n" << lieMatrix << std::endl;
     //int nada;  std::cin >> nada;
 }
+
 // "The second one, what we call indirect embedding Log-Euclidean(IE - LogE), first maps $A^{+}(n + 1)$ via the coset and
 // polar decomposition into the space of symmetric positive definite(SPD) matrices, $Sym^{+}(n + 1)$, and then into the 
 // linear space $Sym(n + 1)$ by the Log - Euclidean framework."
+void Tensor::UpdateLieIndirect(const Eigen::Vector3d& point_position)
+{
+    const Eigen::Matrix3d mean_mean_T = point_position * point_position.transpose();
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            lieMatrix(i, j) = matrix(i, j) + mean_mean_T(i, j);
+        }
+        lieMatrix(i, 3) = lieMatrix(3, i) = point_position(i);
+    }
+    lieMatrix(3, 3) = 1.0;
+
+    lieMatrix = lieMatrix.sqrt();
+    lieMatrix = lieMatrix.log();
+}
 
 double Tensor::GetPlanarCoefficient() const
 {

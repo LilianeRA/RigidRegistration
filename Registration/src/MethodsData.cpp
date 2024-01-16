@@ -221,12 +221,15 @@ void MethodsData::initInput(int downscalestep)
     // Build the tensors for 
     // Method       Estimation      Match       
     // ICP          ICP             CTSF    -> ICP-CTSF
+    // ICP          ICP             LIEDIR  -> ICP-LIEDIR
+    // ICP          ICP             LIEIND  -> ICP-LIEIND
+    // 
     // ICP          SWC             ICP     -> SWC-ICP
     // ICP          SWC             CTSF    -> SWC-CTSF
-    // SPARSEICP    SPARSEICP       ICP     -> Sparse ICP
-    // SPARSEICP    SPARSEICP       CTSF    -> Sparse ICP-CTSF
+    // ICP          SWC             LIEDIR  -> SWC-LIEDIR
+    // ICP          SWC             LIEIND  -> SWC-LIEIND
     if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC ||
-        this->match == MethodsData::MATCH::LIEDIR)
+        this->match == MethodsData::MATCH::LIEDIR || this->match == MethodsData::MATCH::LIEIND)
     {
         if (tensorParametersSeted)
         {

@@ -73,6 +73,13 @@ bool Point::SetTensorLieDirect() const
 	return true;
 }
 
+bool Point::SetTensorLieIndirect() const
+{
+	if (this->tensor == nullptr) return false;
+	tensor->UpdateLieIndirect(position);
+	return true;
+}
+
 Eigen::Vector3d Point::GetNormal() const
 {
 	if(this->tensor == nullptr) return Eigen::Vector3d(0.0,0.0,0.0);
@@ -148,12 +155,12 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
 	if (!lie1)
 	{
-		std::cout << "!lie1\n";
+		std::cout << "Point::LieDirectDistance: !lie1\n";
 		exit(-1);
 	}
 	if (!lie2) 
 	{	
-		std::cout << "!lie2\n";
+		std::cout << "Point::LieDirectDistance: !lie2\n";
 		exit(-1);
 	}
 	if (verbose)
@@ -164,6 +171,29 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 		std::cout << "W*sub.norm() " << weight * (*lie1 - *lie2).norm() << std::endl;
 	}
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
-	//return CTSF_TensorDistance(p1, p2, weight, false);
+}
+
+double Point::LieIndirectDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
+{
+	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
+	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
+	if (!lie1)
+	{
+		std::cout << "Point::LieDirectDistance: !lie1\n";
+		exit(-1);
+	}
+	if (!lie2)
+	{
+		std::cout << "Point::LieDirectDistance: !lie2\n";
+		exit(-1);
+	}
+	if (verbose)
+	{
+		std::cout << std::setprecision(15) << "log1 " << lie1->norm() << "\n" << *lie1 << std::endl;
+		std::cout << "log2 " << lie2->norm() << "\n" << *lie2 << std::endl;
+		std::cout << "sub " << (*lie1 - *lie2).norm() << "\n" << (*lie1 - *lie2) << std::endl;
+		std::cout << "W*sub.norm() " << weight * (*lie1 - *lie2).norm() << std::endl;
+	}
+	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
 }
 

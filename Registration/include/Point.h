@@ -20,9 +20,11 @@ class Point
 		void Translate(const Eigen::Vector3d &translation);
 		void Rotate(const Eigen::Affine3d &rotation);		
 
-		void SetTensor(const Eigen::Matrix3d &tensorMatrix);
-		bool SetTensorLieDirect() const;
 		Eigen::Vector3d GetNormal() const;
+		void SetTensor(const Eigen::Matrix3d &tensorMatrix);
+		// this is what differentiates the Lie approach (IE, DE, Gong, Calvo, Lovric). The result of this function is stored in "lieMatrix"
+		bool SetTensorLieDirect() const;
+		bool SetTensorLieIndirect() const;
 
 		double GetTensorPlanarCoefficient() const;
 		const Eigen::Matrix3d* GetTensorEigenVectors() const;
@@ -34,13 +36,14 @@ class Point
 		static double CTSF_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double LieDirectDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
+		static double LieIndirectDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 
 		// for computing the distances
 		const Eigen::Matrix3d* GetTensorMatrix() const;
 		const Eigen::Vector3d* GetTensorEigenValues() const;
 		const Eigen::Vector3d* GetTensorJValues() const;
 
-		const Eigen::Matrix4d* GetLieMatrix() const;
+		const Eigen::Matrix4d* GetLieMatrix() const; // return the value stored for the Lie approach (Direct, Indirect, Gong, Calvo, Lovric)
 
 
     protected:

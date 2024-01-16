@@ -54,7 +54,7 @@ void RigidRegistration::Run()
 
         MatchPointClouds();
         const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
-        std::cout << "transformation\n" << transformation.matrix() << std::endl;
+        //std::cout << "transformation\n" << transformation.matrix() << std::endl;
         ++currentErrorIterations;
         ++currentIterations;
 
@@ -88,7 +88,7 @@ void RigidRegistration::Run()
                 currentErrorIterations = 0;
             }
         }
-        int nada; std::cin >> nada;
+        //int nada; std::cin >> nada;
     }
 
     // after the resgistration, compute the correspondent points
@@ -140,6 +140,11 @@ void RigidRegistration::Setup()
             distanceFunction = Point::LieDirectDistance;
             preMatchFunction = TensorEstimator::SetTensorsLieDirect;
         }
+        if (match == MethodsData::MATCH::LIEIND)             // ICP-LIEIND
+        {
+            distanceFunction = Point::LieIndirectDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieIndirect;
+        }
 
         estimationFunction = Estimators::ICP_Besl;
 
@@ -165,6 +170,11 @@ void RigidRegistration::Setup()
         {
             distanceFunction = Point::LieDirectDistance;
             preMatchFunction = TensorEstimator::SetTensorsLieDirect;
+        }
+        if (match == MethodsData::MATCH::LIEIND)             // SWC-LIEIND
+        {
+            distanceFunction = Point::LieIndirectDistance;
+            preMatchFunction = TensorEstimator::SetTensorsLieIndirect;
         }
 
         estimationFunction = Estimators::SWC_Akio;
@@ -251,10 +261,6 @@ void RigidRegistration::MatchPointClouds()
         }
     }	
     
-    for (int i = 0; i < 5; i++)
-    {
-        std::cout << "i " << i << " " << tgt2src_correspondence.at(i) << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true) << std::endl;
-    }
     /*for (int i = 0; i < 5; i++)
     {
         std::cout << "i " << i << " " << tgt2src_correspondence.at(i) << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true) << std::endl;
