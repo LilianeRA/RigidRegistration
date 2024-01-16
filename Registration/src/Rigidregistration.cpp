@@ -133,7 +133,6 @@ void RigidRegistration::Setup()
         {
             distanceFunction = Point::CTSF_TensorDistance;
             preMatchFunction = foo;
-
         }
         if (match == MethodsData::MATCH::LIEDIR)             // ICP-LIEDIR
         {
