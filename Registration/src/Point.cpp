@@ -66,7 +66,7 @@ void Point::SetTensor(const Eigen::Matrix3d& tensorMatrix)
 	tensor->Update(tensorMatrix);
 }
 
-bool Point::SetTensorLieDirect()
+bool Point::SetTensorLieDirect() const
 {
 	if (this->tensor == nullptr) return false;
 	tensor->UpdateLieDirect(position);
@@ -85,44 +85,34 @@ double Point::GetTensorPlanarCoefficient() const
 	return this->tensor->GetPlanarCoefficient();
 }
 
-Eigen::Matrix3d* Point::GetTensorMatrix() const
+const Eigen::Matrix3d* Point::GetTensorMatrix() const
 {
 	if (this->tensor == nullptr) return nullptr;
-	Eigen::Matrix3d* m = new Eigen::Matrix3d();
-	*m = tensor->GetTensorMatrix();
-	return m;
+	return &tensor->GetTensorMatrix();
 }
 
-Eigen::Vector3d* Point::GetTensorEigenValues() const
+const Eigen::Vector3d* Point::GetTensorEigenValues() const
 {
 	if (this->tensor == nullptr) return nullptr;
-	Eigen::Vector3d* v = new Eigen::Vector3d();
-	*v = tensor->GetEigenValues();
-	return v;
+	return &tensor->GetEigenValues();
 }
 
-Eigen::Vector3d* Point::GetTensorJValues() const
+const Eigen::Vector3d* Point::GetTensorJValues() const
 {
 	if (this->tensor == nullptr) return nullptr;
-	Eigen::Vector3d* v = new Eigen::Vector3d();
-	*v = tensor->GetJValues();
-	return v;
+	return &tensor->GetJValues();
 }
 
-Eigen::Matrix4d* Point::GetLieMatrix() const
+const Eigen::Matrix4d* Point::GetLieMatrix() const
 {
 	if (this->tensor == nullptr) return nullptr;
-	Eigen::Matrix4d* m = new Eigen::Matrix4d();
-	*m = tensor->GetLieMatrix();
-	return m;
+	return &tensor->GetLieMatrix();
 }
 
-Eigen::Matrix3d* Point::GetTensorEigenVectors() const
+const Eigen::Matrix3d* Point::GetTensorEigenVectors() const
 {
 	if (this->tensor == nullptr) return nullptr;
-	Eigen::Matrix3d* m = new Eigen::Matrix3d();
-	*m = tensor->GetEigenVectors();
-	return m;
+	return &tensor->GetEigenVectors();
 }
 
 double Point::EuclideanDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
@@ -136,6 +126,7 @@ double Point::PureCTSF_TensorDistance(const Point* p1, const Point* p2)
 	const Eigen::Vector3d* eigenValues2 = p2->GetTensorEigenValues();
 	return (*eigenValues1 - *eigenValues2).squaredNorm();
 }
+
 double Point::CTSF_TensorDistance(const Point* p1, const Point* p2, const double weight, const bool verbose)
 {
 	//SQR((t1.eigenValues(0) - t2.eigenValues(0))) + SQR((t1.eigenValues(1) - t2.eigenValues(1))) + SQR((t1.eigenValues(2) - t2.eigenValues(2)));
@@ -155,7 +146,16 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 {
 	const Eigen::Matrix4d* lie1 = p1->GetLieMatrix();
 	const Eigen::Matrix4d* lie2 = p2->GetLieMatrix();
-
+	if (!lie1)
+	{
+		std::cout << "!lie1\n";
+		exit(-1);
+	}
+	if (!lie2) 
+	{	
+		std::cout << "!lie2\n";
+		exit(-1);
+	}
 	if (verbose)
 	{
 		std::cout << std::setprecision(15) << "log1 " << lie1->norm() << "\n" << *lie1 << std::endl;
@@ -164,10 +164,6 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 		std::cout << "W*sub.norm() " << weight * (*lie1 - *lie2).norm() << std::endl;
 	}
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
+	//return CTSF_TensorDistance(p1, p2, weight, false);
 }
 
-/*double Point::Distance(const Point* p1, const Point* p2, const DISTANCE_TYPE t)
-{
-	if (t == DISTANCE_TYPE::EUCLIDEAN) return (p1->GetPosition()-p2->GetPosition()).norm();
-	return 0.0;
-}*/

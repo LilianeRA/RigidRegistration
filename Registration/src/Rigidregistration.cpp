@@ -41,24 +41,25 @@ void RigidRegistration::Run()
     const int cout_precision = 6;
     while (currIterationWeight > 0.0 && currentError > 1e-12)
     {
-        std::cout << currIterationWeight << "\n ";
         if (std::abs(currIterationWeight - minIterationWeight) < 0.0000077 || currIterationWeight < minIterationWeight)
         {
+            if (match == MethodsData::MATCH::LIEDIR || match == MethodsData::MATCH::LIEIND)
+            {
+                break;
+            }
             std::cout << std::scientific << std::setprecision(cout_precision) << "Setting weight to zero: cur. weight: ";
             std::cout << currIterationWeight << " <= " << minIterationWeight << " = min. weight\n";
             currIterationWeight = 0.0;
         }
 
-        std::cout << "MatchPointClouds\n ";
         MatchPointClouds();
-        std::cout << "estimationFunction\n ";
         const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
+        std::cout << "transformation\n" << transformation.matrix() << std::endl;
         ++currentErrorIterations;
         ++currentIterations;
 
         previousError = currentError;
         // compute error
-        std::cout << "RMS_Error\n ";
         currentError = RMS_Error(sourcemesh, targetmesh, tgt2src_correspondence, tgt2src_tensorCorrespondence, transformation, currIterationWeight);
 
         std::cout << "It. " << currentIterations << ": ";
@@ -87,14 +88,14 @@ void RigidRegistration::Run()
                 currentErrorIterations = 0;
             }
         }
-        std::cout << "End loop\n ";
+        int nada; std::cin >> nada;
     }
 
     // after the resgistration, compute the correspondent points
     distanceFunction = Point::EuclideanDistance;
     MatchPointClouds(); // updates the correspondence list, now based on euclidean distance
     currentError = RootMeanSquare(sourcemesh, targetmesh, tgt2src_correspondence);
-    /////////////////////////////////////////////// confira a matriz de transformacao. deve estar jogando os pontos pra longe
+
     unsigned int i = 0;
     unsigned int correspondences = 0;
     for (unsigned int t : tgt2src_correspondence) 
@@ -105,7 +106,7 @@ void RigidRegistration::Run()
         }
         ++i;
     }
-    std::cout << "Final error: " << currentError << " correspondences " << correspondences << std::endl;
+    std::cout << "Final Euclidean error: " << currentError << " correspondences " << correspondences << std::endl;
 }
 
 void RigidRegistration::Setup()
@@ -214,26 +215,33 @@ void RigidRegistration::MatchPointClouds()
     // building the correspondence list
     tgt2src_correspondence.clear();
 
-    std::cout << "Getting meshes\n";
     const PointCloud* sourcemesh = data->getSourcePointCloud();
     const PointCloud* targetmesh = data->getTargetPointCloud();
 
-    std::cout << "preMatchFunctions\n";
     preMatchFunction(sourcemesh);
     preMatchFunction(targetmesh);
 
-    std::cout << "Getting points\n";
     const auto& source_points = sourcemesh->GetPoints();
     const auto& target_points = targetmesh->GetPoints();
     for (unsigned int targetCounter = 0; targetCounter < target_points.size(); ++targetCounter)
     {
         const Point* tgt_pt = target_points.at(targetCounter);
+        if (!tgt_pt)
+        {
+            std::cout << "No tgt_pt! " << targetCounter << std::endl;
+            exit(-1);
+        }
         tgt2src_correspondence.push_back(targetCounter);
 
         double distance = DBL_MAX;
         for (unsigned int sourceCounter = 0; sourceCounter < source_points.size(); ++sourceCounter)
         {
             const Point* src_pt = source_points.at(sourceCounter);
+            if (!src_pt)
+            {
+                std::cout << "No src_point! " << sourceCounter << std::endl;
+                exit(-1);
+            }
             double d = distanceFunction(src_pt, tgt_pt, currIterationWeight, false);
             if (d < distance)
             {
@@ -241,8 +249,12 @@ void RigidRegistration::MatchPointClouds()
                 tgt2src_correspondence.back() = sourceCounter;
             }
         }
+    }	
+    
+    for (int i = 0; i < 5; i++)
+    {
+        std::cout << "i " << i << " " << tgt2src_correspondence.at(i) << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true) << std::endl;
     }
-    std::cout << "Done\n" << std::endl;
     /*for (int i = 0; i < 5; i++)
     {
         std::cout << "i " << i << " " << tgt2src_correspondence.at(i) << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true) << std::endl;

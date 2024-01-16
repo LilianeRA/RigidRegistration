@@ -92,17 +92,17 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
     /*std::cout << std::setprecision(15) << "S\n" << matrix << std::endl;
     std::cout << "mean " << point_position.transpose() << std::endl;
     std::cout << "Sinv\n" << ctsf_matrix_inverse << std::endl;
-    std::cout << "L\n" << matrixL << std::endl;*/
-    //std::cout << std::setprecision(15) << "L\n" << matrixL << std::endl;
-    //std::cout << std::setprecision(15) << "L*LT\n" << matrixL * matrixL.transpose() << std::endl;
+    std::cout << "L\n" << matrixL << std::endl;
+    std::cout << std::setprecision(15) << "L\n" << matrixL << std::endl;
+    std::cout << std::setprecision(15) << "L*LT\n" << matrixL * matrixL.transpose() << std::endl;*/
     assert(std::abs(((matrixL * matrixL.transpose()) - ctsf_matrix_inverse).norm()) < 0.000077);
 
     // L^{-T}
     const Eigen::Matrix3d L_inverse_transpose = matrixL.inverse().transpose();
     //std::cout << std::setprecision(15) << "L_inverse_transpose\n" << L_inverse_transpose << std::endl;
 
-    /*std::cout << "Linv\n" << matrixL.inverse() << std::endl;
-    std::cout << "Linvtr\n" << L_inverse_transpose << std::endl;*/
+    //std::cout << "Linv\n" << matrixL.inverse() << std::endl;
+    //std::cout << "Linvtr\n" << L_inverse_transpose << std::endl;
 
     for (int i = 0; i < 3; i++) 
     {
@@ -119,7 +119,6 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position)
     lieMatrix = lieMatrix.log();
     //std::cout << "logA\n" << lieMatrix << std::endl;
     //int nada;  std::cin >> nada;
-
 }
 // "The second one, what we call indirect embedding Log-Euclidean(IE - LogE), first maps $A^{+}(n + 1)$ via the coset and
 // polar decomposition into the space of symmetric positive definite(SPD) matrices, $Sym^{+}(n + 1)$, and then into the 

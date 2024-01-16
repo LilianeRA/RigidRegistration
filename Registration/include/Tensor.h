@@ -17,7 +17,7 @@ class Tensor
 
         const Eigen::Matrix3d& GetTensorMatrix() const;
         const Eigen::Vector3d& GetEigenValues() const; // used when computing the CTSF distance
-        const Eigen::Vector3d& GetJValues() const; // used when computing the CTSF distance
+        const Eigen::Vector3d& GetJValues() const; 
 
         const Eigen::Matrix4d& GetLieMatrix() const;
     protected:

@@ -93,10 +93,11 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
 void TensorEstimator::SetTensorsLieDirect(const PointCloud* pointCloud)
 {
     const auto& points = pointCloud->GetPoints();
-    for(Point *point : points)
+    for(const Point *point : points)
     {
         if (!point->SetTensorLieDirect())
         {
+            std::cout <<"    Error: no tensor for the point. Check if the CTSF tensor was estimated before.\n";
             PRINT_ERROR("Error: no tensor for the point. Check if the CTSF tensor was estimated before.");
             exit(-1);
         }
@@ -238,19 +239,20 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
     for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
     {
         //Mount a rotation matrix with the eigenvectors.
-        Eigen::Matrix3d* eigenVectors = points.at(pointCounter)->GetTensorEigenVectors();
-        if (!eigenVectors)
+        const Eigen::Matrix3d* evec = points.at(pointCounter)->GetTensorEigenVectors();
+        if (!evec)
         {
             PRINT_ERROR("No tensor, no eigen vector");
             exit(-1);
         }
+        const Eigen::Matrix3d eigenVectors = *evec;
         //std::cout << std::fixed << std::setprecision(20) ;
         //file <<std::setprecision(20)<< "x " << pointCounter << " Eigenvectors\n";
         //file << *eigenVectors << "\n";
 
-        eigenVectors->col(0).real().normalized();
-        eigenVectors->col(1).real().normalized();
-        eigenVectors->col(2).real().normalized();
+        eigenVectors.col(0).real().normalized(); // ?????????????????????????????????????????????????????????????????????????????????????
+        eigenVectors.col(1).real().normalized();
+        eigenVectors.col(2).real().normalized();
 
         // Gets the farthest point in the neighborhood to set its influence
         Eigen::Vector3d currentPoint = points.at(pointCounter)->GetPosition();
@@ -285,7 +287,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
             Eigen::Vector3d neighborPoint = p->GetPosition();
             Eigen::Vector3d pointToNeighborPoint = neighborPoint + randomNormal - currentPoint;
             // Allign the normal direction with the eigensystem
-            Eigen::Vector3d pq_alligned = *eigenVectors * pointToNeighborPoint;
+            Eigen::Vector3d pq_alligned = eigenVectors * pointToNeighborPoint;
 
             // Creating the spherical coordinates correspondence
             Eigen::Vector3d sphericalCoordCorresp;
@@ -336,7 +338,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
                 double f = std::exp(- ( (s / pointStandardDeviation)* (s / pointStandardDeviation)) );
 
                 //Bring back from the eigensystem
-                Eigen::Matrix3d transposeMatrix = eigenVectors->transpose();
+                Eigen::Matrix3d transposeMatrix = eigenVectors.transpose();
                 Eigen::Vector3d vnl = transposeMatrix * voteVector;
                 Eigen::Matrix3d t = vnl * vnl.transpose();
                 for (int j = 0; j < 9; j++) 

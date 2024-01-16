@@ -580,7 +580,7 @@ void PointCloud::ApplyTransformation(const Eigen::Affine3d& transformation)
 			std::cout << i << ": " << p->GetPosition().transpose() << std::endl;
 		i++;*/
 		
-		Eigen::Matrix3d* tensorMatrix = p->GetTensorMatrix();
+		const Eigen::Matrix3d* tensorMatrix = p->GetTensorMatrix();
 		if (tensorMatrix)
 		{
 			Eigen::Matrix3d t = (transformation.rotation() * (*tensorMatrix)) * transformation.rotation().transpose();
