@@ -201,8 +201,8 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
 	*/
 	
-	p1->SetTensorLieDirect(weight, verbose);
-	p2->SetTensorLieDirect(weight, verbose);
+	//p1->SetTensorLieDirect(weight, verbose);
+	//p2->SetTensorLieDirect(weight, verbose);
 	const Eigen::Vector4d *lieEigenValue1 = p1->GetLieEigenValues();
 	const Eigen::Vector4d *lieEigenValue2 = p2->GetLieEigenValues();
 	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();

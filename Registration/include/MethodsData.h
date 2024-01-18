@@ -46,6 +46,7 @@ class MethodsData
         const PointCloud* getSourcePointCloud() const;
         const PointCloud* getTargetPointCloud() const;
 
+        const std::string GetTestDirectory() const;
 
 		void saveParameters() const;
     protected:

@@ -17,16 +17,16 @@ TensorEstimator::~TensorEstimator()
 {
     //dtor
 }
-const std::string coplanarFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regCoplanarSE.txt" };
-const std::string radialFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regRadialSE.txt" };
-const std::string radialDataFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regRadialDataSE.txt" };
-const std::string coplanarDataFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regCoplanarDataSE.txt" };
+//const std::string coplanarFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regCoplanarSE.txt" };
+//const std::string radialFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regRadialSE.txt" };
+//const std::string radialDataFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regRadialDataSE.txt" };
+//const std::string coplanarDataFile{ "E:/RigidRegistration/Mandar3/result/ICP/ICP_LIEDIR_05_1/regCoplanarDataSE.txt" };
 
 void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regularization, const double limit_angle, 
     const double ellipsoid_angle, const double sigmaN, const double ctsf_percentage)
 {
     RadialStructuringElement(pointCloud, sigmaN, ctsf_percentage);
-    std::ofstream file;
+    /*std::ofstream file;
     file.open(radialDataFile.c_str(), std::ofstream::out | std::ofstream::app);
     const auto& p = pointCloud->GetPoints();
     for (int x = 0; x < pointCloud->GetTotalPoints(); x++) {
@@ -37,10 +37,10 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
         file << "\n\n";
     }
     file.close();
-    std::cout << "End of RadialStructuringElement "; int nada; std::cin >> nada;
+    std::cout << "End of RadialStructuringElement "; int nada; std::cin >> nada;*/
 
     CoplanarStructuringElement(pointCloud, regularization, limit_angle, ellipsoid_angle, sigmaN, ctsf_percentage);
-    std::ofstream file2;
+    /*std::ofstream file2;
     file2.open(coplanarDataFile.c_str());
     const auto& p2 = pointCloud->GetPoints();
     for (int x = 0; x < pointCloud->GetTotalPoints(); x++) {
@@ -51,20 +51,20 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
         file2 << "\n\n";
     }
     file2.close();
-    std::cout << "End of CoplanarStructuringElement "; std::cin >> nada;
+    std::cout << "End of CoplanarStructuringElement "; std::cin >> nada;*/
 
     double cp = 0, prevcp = -1;
     int it = 0;
     // As long as the cp is raising the coplanarSE is applyed
     while (cp > prevcp && it < MAX_IT)
     {
-        std::ofstream file;
+        /*std::ofstream file;
         file.open(coplanarDataFile.c_str(), std::ofstream::out | std::ofstream::app);
         file << std::fixed << std::setprecision(20) << "it: " << it << " cp " << cp << " prevcp " << prevcp << "\n";
-        file.close();
+        file.close();*/
         CoplanarStructuringElement(pointCloud, regularization, limit_angle, ellipsoid_angle, sigmaN, ctsf_percentage);
 
-        std::cout << "cp > prevcp ? " << cp <<" "<< prevcp << std::endl;
+        //std::cout << "cp > prevcp ? " << cp <<" "<< prevcp << std::endl;
         //std::cout << "End of CoplanarStructuringElement "; std::cin >> nada;
         prevcp = cp;
         cp = 0;
@@ -75,7 +75,7 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
         }
         cp /= points.size();
 
-        file.open(coplanarDataFile.c_str(), std::ofstream::out | std::ofstream::app);
+        /*file.open(coplanarDataFile.c_str(), std::ofstream::out | std::ofstream::app);
         std::cout << std::fixed << std::setprecision(15) << "it: " << it << " cp " << cp << "\n";
         for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
         {
@@ -84,10 +84,10 @@ void TensorEstimator::Estimate(const PointCloud* pointCloud, const bool regulari
             file << "x " << pointCounter<< " normal " << points.at(pointCounter)->GetNormal().transpose() << "\n";
             file << *points.at(pointCounter)->GetTensorMatrix() << "\n";
         }
-        file.close();
+        file.close();*/
         ++it;
     }
-    std::cout << "End of Estimation "; std::cin >> nada;
+    //std::cout << "End of Estimation "; std::cin >> nada;
 }
 
 void TensorEstimator::SetTensorsLieDirect(const PointCloud* pointCloud, const double weight)
@@ -168,19 +168,19 @@ void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, con
     Eigen::Matrix3d tensor_sum;
     double max_l2 = 0.0;
 
-    std::ofstream file;
-    file.open(radialFile.c_str(), std::ofstream::out | std::ofstream::app);
+    //std::ofstream file;
+    //file.open(radialFile.c_str(), std::ofstream::out | std::ofstream::app);
 
     /// Phase 1
     const auto& points = pointCloud->GetPoints();
     const int lastIndex = (ctsf_percentage == 100.0 ? -1 : std::floor(points.size() * ctsf_percentage)-2);
     //std::cout << "lastIndex " << lastIndex << "\n";
     //std::cout << "points.size() * ctsf_percentage " << points.size() * ctsf_percentage -1 << "\n";
-    for (int pointCounter = 0; pointCounter <= lastIndex; ++pointCounter)
+    /*for (int pointCounter = 0; pointCounter <= lastIndex; ++pointCounter)
     {
         Eigen::Vector3d posX = points.at(pointCounter)->GetPosition();
         file <<std::fixed << std::setprecision(20) << posX.x() << " " << posX.y() << " " << posX.z() << "\n";
-    }
+    }*/
     // for (int x = 0; x < pointCloud->nPoints; x++)
     for (int pointCounter = 0; pointCounter < points.size(); ++pointCounter)
     {
@@ -201,13 +201,13 @@ void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, con
         
         
         //std::cout << "x " << pointCounter << ", " << pointCloud->GetIndexFromDistanceList(pointCounter, -1) << "\n";
-        file << "x " << pointCounter << ", " << pointCloud->GetIndexFromDistanceList(pointCounter, lastIndex) << "\n";
+        /*file << "x " << pointCounter << ", " << pointCloud->GetIndexFromDistanceList(pointCounter, lastIndex) << "\n";
         file << "pX  " << currentPoint.x() << " " << currentPoint.y() << " " << currentPoint.z() << "\n";
         file << "pXK " << fathestPoint.x() << " " << fathestPoint.y() << " " << fathestPoint.z() << "\n";
         file << "pq  " << pointToFathestPoint.x() << " " << pointToFathestPoint.y() << " " << pointToFathestPoint.z() << ", " << pointToFathestPoint.norm() << "\n";
         file << "max_ed2  " << max_ed2 << "\n";
         file << "log(mKInfluence) " << std::log(K_INFLUENCE) << " " << (-max_ed2 / std::log(K_INFLUENCE)) << "\n";
-        file << std::setprecision(20) << "pointCloud->sigma " << pointStandardDeviation << "\n";
+        file << std::setprecision(20) << "pointCloud->sigma " << pointStandardDeviation << "\n";*/
         
         
         // Run the neighborhood
@@ -218,7 +218,7 @@ void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, con
             //pqAux = pointCloud->list[pointCloud->invertedList(x,i)]->pos - pointCloud->list[x]->pos;
             Eigen::Vector3d neighborPoint = pointCloud->GetPointFromDistanceList(pointCounter, neighborCounter)->GetPosition();
             Eigen::Vector3d pointToNeighborPoint = neighborPoint - currentPoint;
-            file << "pqAux " << pointToNeighborPoint(0) << " " << pointToNeighborPoint(1) << " " << pointToNeighborPoint(2) << "\n";
+            //file << "pqAux " << pointToNeighborPoint(0) << " " << pointToNeighborPoint(1) << " " << pointToNeighborPoint(2) << "\n";
 
             // Displace the point, so additive noise could be softened
             // pqAux = pqAux * rd * sigmaN;
@@ -228,11 +228,11 @@ void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, con
 
             double dist2 = pointToFathestPoint.squaredNorm();
             
-            file << "pXI " << neighborPoint(0) << " " << neighborPoint(1) << " " << neighborPoint(2) << "\n";
+            /*file << "pXI " << neighborPoint(0) << " " << neighborPoint(1) << " " << neighborPoint(2) << "\n";
             file << "rd " << rd << "\n";
             file << "pqAux " << pointToNeighborPoint(0) << " " << pointToNeighborPoint(1) << " " << pointToNeighborPoint(2) << "\n";
             file << "pq    " << pointToFathestPoint(0) << " " << pointToFathestPoint(1) << " " << pointToFathestPoint(2) << "\n";
-            file << "dist2 " << dist2 << "\n";
+            file << "dist2 " << dist2 << "\n";*/
             
             if (std::abs(dist2) > 0.0000077) 
             {
@@ -245,10 +245,10 @@ void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, con
                 for (int j = 0; j < 9; j++)
                     tensor_sum(j) += gaussian * t(j);
 
-                file << "t\n" << t << "\n";
+                /*file << "t\n" << t << "\n";
                 file << std::setprecision(20)<< "gaussian " << gaussian << "\n";
                 file << "tensorsum" << "\n";
-                file << tensor_sum << "\n";
+                file << tensor_sum << "\n";*/
             }
         }
         
@@ -266,22 +266,22 @@ void TensorEstimator::RadialStructuringElement(const PointCloud* pointCloud, con
         }
         points.at(pointCounter)->SetTensor(tensor_sum);
         
-        file << "l2    " << l2 << "\n";
+        /*file << "l2    " << l2 << "\n";
         file << "maxl2 " << max_l2 << "\n";
         file << "updateTensor radial" << "\n";
         file << *points.at(pointCounter)->GetTensorMatrix() << "\n\n";
         file << *points.at(pointCounter)->GetTensorEigenValues() << "\n\n";
         file << *points.at(pointCounter)->GetTensorEigenVectors() << "\n\n";
-        file << points.at(pointCounter)->GetNormal() << "\n\n";
+        file << points.at(pointCounter)->GetNormal() << "\n\n";*/
     }
-    file.close();
+    //file.close();
 }
 
 void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, const bool regularization, const double limit_angle, 
     const double ellipsoid_angle, const double sigmaN, const double ctsf_percentage)
 {
-    std::ofstream file;
-    file.open(coplanarFile.c_str(), std::ofstream::out | std::ofstream::app);
+    //std::ofstream file;
+    //file.open(coplanarFile.c_str(), std::ofstream::out | std::ofstream::app);
 
     RandomGaussian* random_gauss = new RandomGaussian();
     random_gauss->m_SetSeed(1, 1);
@@ -305,8 +305,8 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
         //const Eigen::Matrix3d eigenVectors = *evec;
         const Eigen::Matrix3d v = *evec;
         //std::cout << std::fixed << std::setprecision(20) ;
-        file <<std::setprecision(20)<< "x " << pointCounter << " Eigenvectors\n";
-        file << v << "\n";
+        //file <<std::setprecision(20)<< "x " << pointCounter << " Eigenvectors\n";
+        //file << v << "\n";
 
         Eigen::Matrix3d eigenVectors;
         eigenVectors.col(0) = v.col(0).real().normalized(); // ?????????????????????????????????????????????????????????????????????????????????????
@@ -322,7 +322,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
         double max_ed2 = pointToFathestPoint.squaredNorm(); // the sum of the squared components
         double pointStandardDeviation = std::sqrt(-max_ed2 / std::log(K_INFLUENCE));
 
-        file << "v\n";
+        /*file << "v\n";
         file << eigenVectors << "\n";
         file << "pointCloud->invertedList(x, pointCloud->k-1) " << pointCloud->GetIndexFromDistanceList(pointCounter, lastIndex) << "\n";
         file << "pX  " << currentPoint.x() << " " << currentPoint.y() << " " << currentPoint.z() << "\n";
@@ -331,7 +331,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
 
         file << "max_ed2  " << max_ed2 << "\n";
         file << "log(mKInfluence) " << std::log(K_INFLUENCE) << " " << (-max_ed2 / std::log(K_INFLUENCE)) << "\n";
-        file << "pointCloud->sigma " << pointStandardDeviation << "\n";
+        file << "pointCloud->sigma " << pointStandardDeviation << "\n";*/
         
         // Run the neighborhood
         // Note: the distance list does not include the vertex itself. Its size is points.size()-1 
@@ -377,7 +377,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
             voteVector(1) = std::sin(sphericalCoordCorresp(2)) * cosbeta;
             voteVector(2) = std::sin(beta);
 
-            file << "rand " << rand << "\n";
+            /*file << "rand " << rand << "\n";
             file << "pqAux " << randomNormal(0) << " " << randomNormal(1) << " " << randomNormal(2) << "\n";
             file << "pq    " << pointToNeighborPoint(0) << " " << pointToNeighborPoint(1) << " " << pointToNeighborPoint(2) << "\n";
             file << "pql   " << pq_alligned(0) << " " << pq_alligned(1) << " " << pq_alligned(2) << "\n";
@@ -386,7 +386,7 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
             file << "tanesf  " << tan_spherical << "\n";
             file << "d       " << d << " beta " << beta << "\n";
             file << "cosbeta " << cosbeta << "\n";
-            file << "vn   " << voteVector(0) << " " << voteVector(1) << " " << voteVector(2) << "\n";
+            file << "vn   " << voteVector(0) << " " << voteVector(1) << " " << voteVector(2) << "\n";*/
 
             // Constrain the conexion angle. Only values bellow may account.
             if (limit_angle == std::numbers::pi / 2.0 || std::abs(tan_spherical) <= std::abs(std::tan(limit_angle)))  //restringe o angulo de conexao
@@ -402,21 +402,21 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
                 Eigen::Matrix3d t = vnl * vnl.transpose();
                 for (int j = 0; j < 9; j++) 
                     tensor_sum(j, pointCloud->GetIndexFromDistanceList(pointCounter, neighborCounter)) += f * t(j);
-                for (int j = 0; j < 9; j++)
+                /*for (int j = 0; j < 9; j++)
                     file <<"ts "<< tensor_sum(j, pointCloud->GetIndexFromDistanceList(pointCounter, neighborCounter)) << " " << t(j) << "\n";
 
                 file << "Influence s " << s << "\n";
                 file << "Decay f " << f << "\n";
                 file << "vnl   " << vnl(0) << " " << vnl(1) << " " << vnl(2) << "\n";
-                file << "t     " << t(0) << " " << t(1) << " " << t(2) << "\n";
+                file << "t     " << t(0) << " " << t(1) << " " << t(2) << "\n";*/
             }
         }
     }
 
-    file << "\ntensorsum.col(i).norm()\n";
+    /*file << "\ntensorsum.col(i).norm()\n";
     for (int i = 0; i < tensor_sum.rows(); i++)
         file << i << ": " << tensor_sum.col(i).norm() << " ";
-    file << "\n";
+    file << "\n";*/
 
     double l2 = 0.0;
     double maxl2 = 0.0;
@@ -446,10 +446,10 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
 
         double planarCoefficient = std::real(((eval(1) - eval(0)) + (eval(1) - eval(0))) / (eval(0) + eval(1) + eval(2)));
 
-        file << "t" << "\n";
+        /*file << "t" << "\n";
         file << t << "\n";
         file << "eval " << eval(0) << " " << eval(1) << " " << eval(2) << "\n";
-        file << "cp " << planarCoefficient << "\n";
+        file << "cp " << planarCoefficient << "\n";*/
 
         const auto& points = pointCloud->GetPoints();
         if (!regularization || planarCoefficient > points.at(pointCounter)->GetTensorPlanarCoefficient())
@@ -458,19 +458,19 @@ void TensorEstimator::CoplanarStructuringElement(const PointCloud* pointCloud, c
             /*std::cout << "updateTensor" << "\n";
             std::cout << *points.at(pointCounter)->GetTensorMatrix() << "\n";
             std::cout << "eigenvalues " << points.at(pointCounter)->GetTensorEigenValues()->transpose() << "\n";
-            std::cout << "eigenvector\n" << *points.at(pointCounter)->GetTensorEigenVectors() << "\n";*/
+            std::cout << "eigenvector\n" << *points.at(pointCounter)->GetTensorEigenVectors() << "\n";
 
             file << std::fixed << std::setprecision(20) << "pointCounter " << pointCounter << " updateTensor" << "\n";
             file << t << "\n";
             file << *points.at(pointCounter)->GetTensorMatrix() << "\n";
             file << "eigenvalues " << points.at(pointCounter)->GetTensorEigenValues()->transpose() << "\n";
-            file << "eigenvector\n" << *points.at(pointCounter)->GetTensorEigenVectors() << "\n";
+            file << "eigenvector\n" << *points.at(pointCounter)->GetTensorEigenVectors() << "\n";*/
         }
         //pointCloud->list[x]->normal = pointCloud->list[x]->tensor.eigenVectors.row(2).real();
         
-        file << "n: " << points.at(pointCounter)->GetNormal().transpose() << "\n";
+        //file << "n: " << points.at(pointCounter)->GetNormal().transpose() << "\n";
 
         //std::cout << "enter a number\n";
     } 
-    file.close();
+    //file.close();
 }

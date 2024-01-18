@@ -184,6 +184,11 @@ const PointCloud* MethodsData::getTargetPointCloud() const
     return this->targetmesh;
 }
 
+const std::string MethodsData::GetTestDirectory() const
+{
+    return DirHandler::JoinPaths(outputdir, testname);
+}
+
 void MethodsData::SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN)
 {
     this->alphacut_radians = alphacut_degrees * (std::numbers::pi / 180.0);
@@ -212,15 +217,25 @@ void MethodsData::initInput(int downscalestep)
             if (this->totalholes >= 2)
                 this->holesIndex.push_back(sourcemesh->createHole(this->holeradius, 880));
         }*/
-        sourcemesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
 
         targetmesh->SetType(PointCloud::TYPE::TARGET_MODEL);
         targetmesh->SetColor(Eigen::Vector3d(0.0, 0.0, 0.0));
         targetmesh->Build(downscalestep);
+
+        // translating to the first quadrant for better visualization
+        // while respecting the translation applied to the input data.
+        Eigen::Vector3d src_min_pt = sourcemesh->GetMinPoint();
+        Eigen::Vector3d tgt_min_pt = targetmesh->GetMinPoint();
+        Eigen::Vector3d min_translation;
+        min_translation.x() = std::min(src_min_pt.x(), tgt_min_pt.x());
+        min_translation.y() = std::min(src_min_pt.y(), tgt_min_pt.y());
+        min_translation.z() = std::min(src_min_pt.z(), tgt_min_pt.z());
+        min_translation = -min_translation;
+        sourcemesh->Translate(min_translation);
+        targetmesh->Translate(min_translation);
+
+        sourcemesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
         targetmesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
-   
-        std::cout << "Source: " << sourcemesh->GetTotalPoints() << " vertices" << std::endl;
-        std::cout << "Target: " << targetmesh->GetTotalPoints() << " vertices" << std::endl;
     }
 
     // Build the tensors for 

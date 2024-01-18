@@ -44,8 +44,8 @@ const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const P
 
     Eigen::Vector3d targetCentroid = ComputeCenteroid(target_points);
     Eigen::Vector3d correspCentroid = ComputeCenteroid(correspondentPoints, true);
-    std::cout << std::setprecision(15) << "dataCenterOfMass " << targetCentroid.transpose() << "\n";
-    std::cout << "YCenterOfMass    " << correspCentroid.transpose() << "\n";
+    //std::cout << std::setprecision(15) << "dataCenterOfMass " << targetCentroid.transpose() << "\n";
+    //std::cout << "YCenterOfMass    " << correspCentroid.transpose() << "\n";
     const Eigen::Matrix3d covariance = ComputeCovariance(target_points, correspondentPoints, targetCentroid, correspCentroid);
     //std::cout << "covariance\n" << covariance << "\n";
     const Eigen::Matrix4d quaternionMatrix = ComputeQuaternionFromCovariance(covariance);

@@ -60,6 +60,8 @@ void read_ply(const std::string &filename, unsigned int downscale,
     z_s.clear();
 }
 
+// This way, the error measurements for all the point clouds are on a similar order of magnitude. 
+// 2016, Wide Angle Rigid Registration using a Comparative Tensor Shape Factor
 float normalize(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud)
 {
     Eigen::Vector3d max_pt{-INT_MAX,-INT_MAX,-INT_MAX};
@@ -327,7 +329,10 @@ void build_new_pointcloud(Eigen::Matrix<double, 3, Eigen::Dynamic> &point_cloud,
             }
         }
     }
-
+    
+    // this makes the point clou as in the original code.
+    // but diong this, will ruin the transformation that originated the cloud.
+    // float scale = normalize(point_cloud); 
 
     for(unsigned int i = 0; i < holes; i++)
     {

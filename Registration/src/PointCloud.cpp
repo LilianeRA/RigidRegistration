@@ -67,6 +67,7 @@ PointCloud* PointCloud::Copy() const
 	std::copy(originalVertices.begin(), originalVertices.end(), std::back_inserter(copyPointCloud->originalVertices));
 	std::copy(distanceList.begin(), distanceList.end(), std::back_inserter(copyPointCloud->distanceList));
 	std::copy(PureCTSF_distanceList.begin(), PureCTSF_distanceList.end(), std::back_inserter(copyPointCloud->PureCTSF_distanceList));
+	// Do I need to copy the tensor?
 
 	copyPointCloud->precision = precision;
 	copyPointCloud->skipstep = skipstep;
@@ -108,6 +109,27 @@ void PointCloud::Build(int skipstep)
 
 	SetDistanceList();
 
+}
+
+Eigen::Vector3d PointCloud::GetMinPoint() const
+{
+	Eigen::Vector3d min_pt{ INT_MAX, INT_MAX, INT_MAX };
+	for (const Point* point : originalVertices)
+	{
+		const Eigen::Vector3d& pos = point->GetPosition();
+		min_pt.x() = std::min(min_pt.x(), pos.x());
+		min_pt.y() = std::min(min_pt.y(), pos.y());
+		min_pt.z() = std::min(min_pt.z(), pos.z());
+	}
+	return min_pt;
+}
+
+void PointCloud::Translate(const Eigen::Vector3d& translation)
+{
+	for (Point* point : originalVertices)
+	{
+		point->Translate(translation);
+	}
 }
 
 void PointCloud::SetDistanceList()
@@ -460,11 +482,11 @@ void save_ply(const std::string &fullFilepath,
 	z_s.clear();
 }
 
-void PointCloud::SaveInput(const std::string & testpath)
+void PointCloud::SaveInput(const std::string & test_directory) const
 {
 	if (originalVertices.size() > 0 )
 	{
-		std::string fullpathOrig{ DirHandler::JoinPaths(testpath, this->filename) };
+		std::string fullpathOrig{ DirHandler::JoinPaths(test_directory, this->filename) };
 		if (this->type == TYPE::SOURCE_DATA)
 		{
 			fullpathOrig = fullpathOrig + "-source-orig.ply";
@@ -563,6 +585,16 @@ void PointCloud::SaveInput(const std::string & testpath)
 		datfile<<p->isRemoved()<<"\n";
 	}
 	datfile.close();*/
+}
+
+void PointCloud::SaveCurrentPoints(const std::string& filepath_prefix) const
+{
+	if (originalVertices.size() > 0)
+	{
+		std::string fullpathOrig{ filepath_prefix + this->filename + ".ply" };
+		std::cout << fullpathOrig <<"\n";
+		save_ply(fullpathOrig, originalVertices);
+	}
 }
 
 void PointCloud::ApplyTransformation(const Eigen::Affine3d& transformation)

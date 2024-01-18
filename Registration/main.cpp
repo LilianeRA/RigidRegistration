@@ -93,7 +93,7 @@ int main(int argc, char const** argv)
 
     std::string keys =
         "{help h  |     | show help message}"   // optional, show help optional
-        "{mode    | meshbatch | execution mode }"
+        "{mode    | meshview | execution mode }"
         "{inputdir  | . | full path }"
         "{outputdir | . | full path }"
         "{method  | ICP | string }"

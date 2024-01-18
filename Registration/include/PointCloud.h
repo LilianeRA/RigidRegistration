@@ -14,10 +14,14 @@ class PointCloud
 		
 		PointCloud* Copy() const;
 
+		// for when building the point cloud
 		void SetType(TYPE type);
 		void SetColor(const Eigen::Vector3d &color);
 		void Build(int skipstep);
-		void SaveInput(const std::string& testpath);
+		Eigen::Vector3d GetMinPoint() const;
+		void Translate(const Eigen::Vector3d& translation);
+		void SaveInput(const std::string& test_directory) const;
+		void SaveCurrentPoints(const std::string& filepath_prefix) const;
 		void SetCTSF_DistanceList(); // for SWC
 
 		void ApplyTransformation(const Eigen::Affine3d &transformation);

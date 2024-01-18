@@ -40,7 +40,7 @@ class RigidRegistration
             const Eigen::Affine3d&, const double) > RMS_Error;
 
         void Setup();
-        void MatchPointClouds();
+        void MatchPointClouds(const PointCloud* sourcemesh, const PointCloud* targetmesh);
 
         void SetTensorCorrespondenceList();
 
