@@ -43,9 +43,9 @@ const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const P
     }
 
     Eigen::Vector3d targetCentroid = ComputeCenteroid(target_points);
-    Eigen::Vector3d correspCentroid = ComputeCenteroid(correspondentPoints);
-    //std::cout << "dataCenterOfMass " << targetCentroid.transpose() << "\n";
-    //std::cout << "YCenterOfMass    " << correspCentroid.transpose() << "\n";
+    Eigen::Vector3d correspCentroid = ComputeCenteroid(correspondentPoints, true);
+    std::cout << std::setprecision(15) << "dataCenterOfMass " << targetCentroid.transpose() << "\n";
+    std::cout << "YCenterOfMass    " << correspCentroid.transpose() << "\n";
     const Eigen::Matrix3d covariance = ComputeCovariance(target_points, correspondentPoints, targetCentroid, correspCentroid);
     //std::cout << "covariance\n" << covariance << "\n";
     const Eigen::Matrix4d quaternionMatrix = ComputeQuaternionFromCovariance(covariance);
@@ -150,15 +150,20 @@ void Estimators::SetTensorCorrespondenceList(const PointCloud* sourcemesh, const
 
 
 
-const Eigen::Vector3d Estimators::ComputeCenteroid(const std::vector<Point*> &points)
+const Eigen::Vector3d Estimators::ComputeCenteroid(const std::vector<Point*> &points, bool verbose)
 {
     Eigen::Vector3d centroid(0.0, 0.0, 0.0);
 
+    //int i = 0;
     for (const auto* p : points)
     {
         centroid += p->GetPosition();
+        //if (verbose && i == 27) std::cout <<std::setprecision(20)<<i<<": "<< p->GetPosition().transpose()<<", "<< centroid.transpose() << std::endl;
+        //i++;
     }
+    ///std::cout << "centroid sum " << centroid.transpose() << std::endl;
     centroid /= (double)points.size();
+    //std::cout << "centroid " << centroid.transpose() << std::endl;
 
     return centroid;
 }

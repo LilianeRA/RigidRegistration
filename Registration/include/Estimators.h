@@ -10,7 +10,7 @@ class Estimators
         Estimators();
         virtual ~Estimators();
 
-        static const Eigen::Vector3d ComputeCenteroid(const std::vector<Point*> &points);
+        static const Eigen::Vector3d ComputeCenteroid(const std::vector<Point*> &points, bool verbose = false);
 
         static const Eigen::Affine3d ICP_Besl(const PointCloud* sourcemesh, const PointCloud* targetmesh, 
             const std::vector<unsigned int> &tgt2src_correspondence, const double weight); // weight is ignored

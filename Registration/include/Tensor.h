@@ -10,7 +10,7 @@ class Tensor
         virtual ~Tensor();
 	    
         void Update(const Eigen::Matrix3d& tensorMatrix);
-        void UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight);
+        void UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight, bool verbose);
         void UpdateLieIndirect(const Eigen::Vector3d& point_position, const double weight);
         void UpdateLieGong(const Eigen::Vector3d& point_position, const double weight);
         void UpdateLieCalvo(const Eigen::Vector3d& point_position, const double weight);

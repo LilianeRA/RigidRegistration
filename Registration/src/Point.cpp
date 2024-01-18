@@ -67,10 +67,10 @@ void Point::SetTensor(const Eigen::Matrix3d& tensorMatrix)
 	tensor->Update(tensorMatrix);
 }
 
-bool Point::SetTensorLieDirect(const double weight) const
+bool Point::SetTensorLieDirect(const double weight, bool verbose) const
 {
 	if (this->tensor == nullptr) return false;
-	tensor->UpdateLieDirect(position, weight);
+	tensor->UpdateLieDirect(position, weight, verbose);
 	return true;
 }
 
@@ -200,6 +200,9 @@ double Point::LieDirectDistance(const Point* p1, const Point* p2, const double w
 	}
 	return weight * (*lie1 - *lie2).norm(); // For matrices, norm() is the Frobenius norm.
 	*/
+	
+	p1->SetTensorLieDirect(weight, verbose);
+	p2->SetTensorLieDirect(weight, verbose);
 	const Eigen::Vector4d *lieEigenValue1 = p1->GetLieEigenValues();
 	const Eigen::Vector4d *lieEigenValue2 = p2->GetLieEigenValues();
 	return (*lieEigenValue1 - *lieEigenValue2).squaredNorm();

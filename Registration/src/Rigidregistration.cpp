@@ -38,7 +38,7 @@ void RigidRegistration::Run()
     unsigned int currentIterations = 0;
     double currentError = initialError;
     double previousError = initialError;
-    const int cout_precision = 6;
+    const int cout_precision = 20;
     std::cout << "---- Starting iterations ----\n"; // its a good warning because some matches are heavy to compute.
     while (currIterationWeight > 0.0 && currentError > 1e-12)
     {
@@ -58,7 +58,7 @@ void RigidRegistration::Run()
 
         MatchPointClouds();
         const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
-        //std::cout << "transformation\n" << transformation.matrix() << std::endl;
+        std::cout << std::scientific << std::setprecision(cout_precision) << "transformation\n" << transformation.matrix() << std::endl;
         ++currentErrorIterations;
         ++currentIterations;
 
@@ -93,7 +93,7 @@ void RigidRegistration::Run()
                 currentErrorIterations = 0;
             }
         }
-        //int nada; std::cin >> nada;
+        int nada; std::cin >> nada;
     }
 
     // after the resgistration, compute the correspondent points
@@ -302,14 +302,22 @@ void RigidRegistration::MatchPointClouds()
             {
                 distance = d;
                 tgt2src_correspondence.back() = sourceCounter;
+                if (sourceCounter == 27)
+                {
+                    distanceFunction(src_pt, tgt_pt, currIterationWeight, true);
+                    std::cout << "tc " << targetCounter << " sc " << sourceCounter << " d " << distance << std::endl;
+                    std::cout << "Continue: "; int nada; std::cin >> nada;
+                }
             }
         }
     }
     
-    /*for (int i = 0; i < 5; i++)
+    for (int i = 0; i < tgt2src_correspondence.size(); i++)
     {
-        std::cout << "i " << i << " " << tgt2src_correspondence.at(i) << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true) << std::endl;
-    }*/
+        std::cout << std::setprecision(20) << "i " << i << " " << tgt2src_correspondence.at(i);
+        std::cout << " dist " << distanceFunction(source_points.at(tgt2src_correspondence.at(i)), target_points.at(i), currIterationWeight, true);
+        std::cout << " pos " << source_points.at(tgt2src_correspondence.at(i))->GetPosition().transpose() << std::endl;
+    }
 
     /*
     src2tgt_correspondence.clear();

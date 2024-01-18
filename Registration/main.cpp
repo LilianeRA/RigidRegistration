@@ -69,7 +69,7 @@ int main(int argc, char const** argv)
 
     // --- Sparse ICP
     -method=SICP -match=ICP  -estimation=SICP
-    -method=SICP -match=CTSF -estimation=SICP -kmodel/kdata={5 10 50 7swc5}
+    -method=SICP -match=CTSF -estimation=SICP -kmodel/kdata={5 10 50 75}
 
     // --- SWC -kmodel/kdata={5 10 50 75}
     -method=SWC -match=ICP    -estimation=ICP
@@ -114,7 +114,7 @@ int main(int argc, char const** argv)
         "{gtfilename | groundtruth.txt | full path }"
         "{sourcemesh | bunny000.ply | full path }"
         "{targetmesh | bunny045.ply | full path }"
-        "{ctsf_percentage   | 5.0 | percentage }"
+        "{tensor_percentage   | 5.0 | percentage }"
         ;
 
     CommandLineParser parser(argc, argv, keys);
@@ -291,7 +291,7 @@ int main(int argc, char const** argv)
     //const double kctsf = 10; //(nao usado)
     const double sigmaN = 0;
     const double stepK = 0.1;
-    const double ctsf_percentage = parser.get<double>("ctsf_percentage")/100.0; 
+    const double tensor_percentage = parser.get<double>("tensor_percentage")/100.0;
 
     if (!parser.check()) {
         parser.printErrors();
@@ -326,7 +326,7 @@ int main(int argc, char const** argv)
 
     MethodsHandler* RR = new MethodsHandler(maindir, inputdir, outputdir, testname, threads);
     RR->SetMode(mode);
-    RR->SetMethod(method, match, estimation, ctsf_percentage);
+    RR->SetMethod(method, match, estimation, tensor_percentage);
     RR->SetGTfile(gtfilename);
     RR->SetTensorParameters(alphacut, alphaellipse, sigmaN);
     RR->SetPointClouds(sourcemesh, targetmesh, downscalestep, totalholes, holeradius);

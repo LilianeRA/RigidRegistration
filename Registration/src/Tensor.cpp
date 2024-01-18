@@ -75,33 +75,36 @@ void Tensor::Update(const Eigen::Matrix3d& tensorMatrix)
 // Please read the "Local Log-Euclidean Multivariate Gaussian Descriptor and Its Application to Image Classification".
 // Trust me, its worth it
 // "The first method, called direct embedding Log-Euclidean(DE - LogE), maps $A^{+}(n + 1)$ via matrix logarithm to the linear space $A(n + 1)$."
-void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight)
+void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight, bool verbose)
 {
     // A =
     //      L^{-T} \nu
     //      0      1
     // DE-LogE = ln(A)
     // \Sigma^{-1} = L \cdot L^T, where L is a lower triangular matrix
-
+    
     const Eigen::Matrix3d ctsf_matrix_inverse = matrix.inverse();
-    //std::cout << std::setprecision(15) << "ctsf_matrix_inverse\n" << ctsf_matrix_inverse << std::endl;
     assert(std::abs( ((matrix * ctsf_matrix_inverse) - Eigen::Matrix3d::Identity()).norm()  ) < 0.000077 );
 
     Eigen::LLT<Eigen::Matrix3d> llt_of_A(ctsf_matrix_inverse);
     const Eigen::Matrix3d matrixL = llt_of_A.matrixL();
-    /*std::cout << std::setprecision(15) << "S\n" << matrix << std::endl;
-    std::cout << "mean " << point_position.transpose() << std::endl;
-    std::cout << "Sinv\n" << ctsf_matrix_inverse << std::endl;
-    std::cout << "L\n" << matrixL << std::endl;*/
+    if (verbose)
+    {
+        std::cout << std::setprecision(15) << "S\n" << matrix << std::endl;
+        std::cout << "mean " << point_position.transpose() << std::endl;
+        std::cout << "Sinv\n" << ctsf_matrix_inverse << std::endl;
+        std::cout << "L\n" << matrixL << std::endl;
+    }
     assert(std::abs(((matrixL * matrixL.transpose()) - ctsf_matrix_inverse).norm()) < 0.000077);
 
     // \omega * L^{-T}
-    const Eigen::Matrix3d L_inverse_transpose = weight * matrixL.inverse().transpose();
-    /*std::cout << std::setprecision(15) << "weight " << weight << std::endl;
-    std::cout << std::setprecision(15) << "L_inverse_transpose\n" << L_inverse_transpose << std::endl;
-
-    std::cout << "Linv\n" << matrixL.inverse() << std::endl;
-    std::cout << "Linvtr\n" << L_inverse_transpose << std::endl;*/
+    const Eigen::Matrix3d L_inverse_transpose = (weight * matrixL).inverse().transpose();
+    if (verbose)
+    {
+        std::cout << "W*L\n" << (weight * matrixL) << std::endl;
+        std::cout << "Linv\n" << (weight * matrixL).inverse() << std::endl;
+        std::cout << "Linvtr\n" << L_inverse_transpose << std::endl;
+    }
 
     for (int i = 0; i < 3; i++) 
     {
@@ -113,19 +116,24 @@ void Tensor::UpdateLieDirect(const Eigen::Vector3d& point_position, const double
         lieMatrix(3, i) = 0.0;
     }
     lieMatrix(3, 3) = 1.0;
-    //std::cout << "A\n" << lieMatrix << std::endl;
+    if (verbose) std::cout << "A\n" << lieMatrix << std::endl;
 
     lieMatrix = lieMatrix.log();
-    //std::cout << "logA\n" << lieMatrix << std::endl;
+    if (verbose) std::cout << "logA\n" << lieMatrix << std::endl;
     
 
     Eigen::SelfAdjointEigenSolver <Eigen::MatrixXd> solver(lieMatrix);
     // eigenvalues are sorted in increasing order
     lieEigenValues = solver.eigenvalues();
+    if (verbose) std::cout << "lieEigenValues " << lieEigenValues.transpose() << std::endl;
     // we need it decreasing
     std::swap(lieEigenValues.x(), lieEigenValues.w());
     std::swap(lieEigenValues.y(), lieEigenValues.z());
-    //int nada;  std::cin >> nada;
+    if (verbose) 
+    {
+        int nada;  
+        std::cin >> nada;
+    }
 }
 
 // "The second one, what we call indirect embedding Log-Euclidean(IE - LogE), first maps $A^{+}(n + 1)$ via the coset and
