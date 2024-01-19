@@ -63,6 +63,7 @@ void MethodsHandler::Run()
         CustomWindow* window = new CustomWindow(false, "View");
         window->InitializeWindow();
         window->SetActiveMethod(data);
+        window->SetRegistration(registration);
         window->SetSourcePointCloud(sourcemesh, glm::vec3(0.5, 0.0, 0.0));
         window->SetTargetPointCloud(targetmesh, glm::vec3(0.0, 0.0, 0.0));
         window->Run();

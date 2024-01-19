@@ -3,6 +3,7 @@
 
 #include "WindowGLFW.h"
 #include "MethodsData.h"
+#include "RigidRegistration.h"
 
 class CustomWindow : public WindowGLFW
 {
@@ -14,6 +15,7 @@ class CustomWindow : public WindowGLFW
 		void SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color);
 
 		void SetActiveMethod(const MethodsData *data);
+		void SetRegistration(RigidRegistration *registration);
 	protected:
 		virtual void SetCustomWindow() override;
 		virtual void CustomDraw() override;
@@ -27,13 +29,14 @@ class CustomWindow : public WindowGLFW
 
 		std::vector<DrawableSpheres*> mOtherSpheres;
 
-		int methodChoice = 0;
+		static int methodChoice;
 		static int matchChoice;
 		static int estimationChoice;
 		std::vector<std::pair<std::string, bool>> methodConfig;
 		std::vector<std::pair<std::string, bool>> matchConfig;
 		std::vector<std::pair<std::string, bool>> estimationConfig;
 
+		RigidRegistration *registration = nullptr;
 
 		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);
 };

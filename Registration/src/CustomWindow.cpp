@@ -1,6 +1,7 @@
 #include "CustomWindow.h"
 #include "imgui.h"
 
+int CustomWindow::methodChoice = 0;
 int CustomWindow::matchChoice = 0;
 int CustomWindow::estimationChoice = 0;
 
@@ -35,8 +36,8 @@ void CustomWindow::SetActiveMethod(const MethodsData* data)
 	data->getActiveMethod(mode, method, match, estimation);
 
 	methodConfig.clear();
-	methodConfig.push_back(std::pair<std::string, bool>("ICP", (method == MethodsData::METHOD::ICP ? true : false)));
-	methodConfig.push_back(std::pair<std::string, bool>("SWC", (method == MethodsData::METHOD::SWC ? true : false)));
+	methodConfig.push_back(std::pair<std::string, bool>("ICP  ", (method == MethodsData::METHOD::ICP ? true : false)));
+	methodConfig.push_back(std::pair<std::string, bool>("SWC  ", (method == MethodsData::METHOD::SWC ? true : false)));
 	//methodConfig.push_back(std::pair<std::string, bool>("GMM", (method == MethodsData::METHOD::GMM ? true : false)));
 	//methodConfig.push_back(std::pair<std::string, bool>("Super 4PCS", (method == MethodsData::METHOD::SUPER4PCS ? true : false)));
 	//methodConfig.push_back(std::pair<std::string, bool>("Sparse ICP", (method == MethodsData::METHOD::SPARSEICP ? true : false)));
@@ -57,6 +58,11 @@ void CustomWindow::SetActiveMethod(const MethodsData* data)
 	//estimationConfig.push_back(std::pair<std::string, bool>("GMM", (estimation == MethodsData::ESTIMATION::GMM ? true : false)));
 	//estimationConfig.push_back(std::pair<std::string, bool>("SPARSEICP", (estimation == MethodsData::ESTIMATION::SPARSEICP ? true : false)));
 	//estimationConfig.push_back(std::pair<std::string, bool>("SUPER4PCS", (estimation == MethodsData::ESTIMATION::SUPER4PCS ? true : false)));
+}
+
+void CustomWindow::SetRegistration(RigidRegistration* registration)
+{
+	this->registration = registration;
 }
 
 void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string &pointCloudName, const glm::vec3 &color) 
@@ -86,26 +92,13 @@ void CustomWindow::SetCustomWindow()
 
 	ImGui::Text("Method configuration ----------");
 
-	/*int method_v_button = 0;
+	int method_v_button = 0;
 	ImGui::Text("Method:");
 	for (const auto& method : methodConfig)
 	{
 		ImGui::SameLine();
 		ImGui::RadioButton(method.first.c_str(), &methodChoice, method_v_button++);
-	}*/
-
-
-	/*enum Mode
-	{
-		Mode_Copy,
-		Mode_Move,
-		Mode_Swap
-	};
-	static int mode = 0;
-	if (ImGui::RadioButton("Copy", mode == Mode_Copy)) { mode = Mode_Copy; } ImGui::SameLine();
-	if (ImGui::RadioButton("Move", mode == Mode_Move)) { mode = Mode_Move; } ImGui::SameLine();
-	if (ImGui::RadioButton("Swap", mode == Mode_Swap)) { mode = Mode_Swap; }*/
-	// use with e.g. if (RadioButton("one", my_value==1)) { my_value = 1; }
+	}
 	int estimation_v_button = 0;
 	ImGui::Text("Estimation:");
 	for (const auto& estimation : estimationConfig)
@@ -124,6 +117,7 @@ void CustomWindow::SetCustomWindow()
 	if (ImGui::Button("Start Registration"))
 	{
 		std::cout << "Starting: " << estimationConfig.at(estimationChoice).first << "-" << matchConfig.at(matchChoice).first << std::endl;
+		//registration->Run();
 	}
 	ImGui::End();
 }

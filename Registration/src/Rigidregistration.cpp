@@ -21,7 +21,7 @@ RigidRegistration::RigidRegistration(const MethodsData *methodsData)
 RigidRegistration::~RigidRegistration()
 {
     //dtor
-}
+} 
 
 void RigidRegistration::Run()
 {
