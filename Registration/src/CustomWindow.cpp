@@ -17,14 +17,37 @@ CustomWindow::~CustomWindow()
 
 void CustomWindow::SetSourcePointCloud(const PointCloud* pointcloud, const glm::vec3& color)
 {
+	if (!pointcloud) return;
+
 	sourcePointCloudName = "Source";
-	SetPointCloud(pointcloud, sourcePointCloudName, color);
+	//SetPointCloud(pointcloud, sourcePointCloudName, color);
+
+	const auto& points = pointcloud->GetPoints();
+	originalSourceSpheres = new DrawableSpheres(sourcePointCloudName);
+	for (const auto& pt : points)
+	{
+		const Eigen::Vector3d& eigen_p = pt->GetPosition();
+		glm::vec3 p{ eigen_p.x(), eigen_p.y(), eigen_p.z() };
+		originalSourceSpheres->PushSphere(p, color, 0.01);
+	}
+	ResetSourceCloud();
 }
 
 void CustomWindow::SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color)
 {
+	if (!pointcloud) return;
+
 	targetPointCloudName = "Target";
-	SetPointCloud(pointcloud, targetPointCloudName, color);
+	//SetPointCloud(pointcloud, targetPointCloudName, color);
+
+	const auto& points = pointcloud->GetPoints();
+	targetSpheres = new DrawableSpheres(targetPointCloudName);
+	for (const auto& pt : points)
+	{
+		const Eigen::Vector3d& eigen_p = pt->GetPosition();
+		glm::vec3 p{ eigen_p.x(), eigen_p.y(), eigen_p.z() };
+		targetSpheres->PushSphere(p, color, 0.01);
+	}
 }
 
 void CustomWindow::GetActiveMethod(const MethodsData* data)
@@ -75,30 +98,25 @@ void CustomWindow::SetActiveMethod()
 	data->setMethod(method, match, estimation, ctsf_percentage); 
 }
 
+void CustomWindow::ResetSourceCloud()
+{
+	if (sourceSpheres)
+	{
+		delete sourceSpheres;
+		sourceSpheres = nullptr;
+	}
+	sourceSpheres = originalSourceSpheres->Copy();
+}
+
 void CustomWindow::SetRegistration(RigidRegistration* registration)
 {
 	this->registration = registration;
 	GetActiveMethod(registration->GetMethodsData());
 }
 
-void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string &pointCloudName, const glm::vec3 &color) 
+void CustomWindow::TransformSourceSpheres(const Eigen::Affine3d &transformation)
 {
-	if (!pointcloud) return;
-
-	const auto& points = pointcloud->GetPoints();
-	DrawableSpheres* ds = new DrawableSpheres(pointCloudName);
-	for (const auto& pt : points)
-	{
-		const Eigen::Vector3d &eigen_p = pt->GetPosition();
-		glm::vec3 p{ eigen_p.x(), eigen_p.y(), eigen_p.z()};
-		ds->PushSphere(p, color, 0.01);
-	}
-	mOtherSpheres.push_back(ds);
-}
-
-void CustomWindow::TransformSpheres(const std::string& pointCloudName, const Eigen::Affine3d &transformation)
-{
-	for (auto* spheres : mOtherSpheres)
+	/*for (auto* spheres : mOtherSpheres)
 	{
 		if (pointCloudName.compare(spheres->GetName()) == 0)
 		{
@@ -118,6 +136,21 @@ void CustomWindow::TransformSpheres(const std::string& pointCloudName, const Eig
 			}
 			break;
 		}
+	}*/
+
+	glm::dvec3 translation;
+	glm::dmat3 transf;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+			transf[i][j] = transformation(j, i); // yes, it's the transpose
+		translation[i] = transformation(i, 3);
+	}
+	glm::dvec3 centroid = sourceSpheres->ComputeCentroid();
+	for (int sphereIndex = 0; sphereIndex < sourceSpheres->GetTotalSpheres(); ++sphereIndex)
+	{
+		sourceSpheres->RotateSpherePosition(sphereIndex, transf, centroid);
+		sourceSpheres->TranslateSpherePosition(sphereIndex, translation);
 	}
 }
 
@@ -160,33 +193,41 @@ void CustomWindow::SetCustomWindow()
 	{
 		std::cout << "Starting: " << estimationConfig.at(estimationChoice).first << "-" << matchConfig.at(matchChoice).first << std::endl;
 
-		SetActiveMethod();;
+		SetActiveMethod();
 		const std::vector<Eigen::Affine3d>& transformations = registration->Run();
 		// updating the visualization
 		for (const auto& t : transformations)
 		{
-			TransformSpheres(sourcePointCloudName, t);
+			TransformSourceSpheres(t);
 		}
+	}
+	if (ImGui::Button("Reset point clouds"))
+	{
+		ResetSourceCloud();
 	}
 	ImGui::End();
 }
 
 void CustomWindow::CustomDraw()
 {
-	for (const auto ds : mOtherSpheres)
+	/*for (const auto ds : mOtherSpheres)
 	{
 		if (!showSrcPointCloud && sourcePointCloudName.compare(ds->GetName()) == 0) continue;
 		if (!showTgtPointCloud && targetPointCloudName.compare(ds->GetName()) == 0) continue;
 
 		ds->Draw(mLightPos, mLightColor);
-	}
+	}*/
+	if (showSrcPointCloud && sourceSpheres) sourceSpheres->Draw(mLightPos, mLightColor);
+	if (showTgtPointCloud && targetSpheres) targetSpheres->Draw(mLightPos, mLightColor);
 }
 
 void CustomWindow::CustomShutdown()
 {
-	for (auto ds : mOtherSpheres)
+	/*for (auto ds : mOtherSpheres)
 		delete ds;
-	mOtherSpheres.clear();
+	mOtherSpheres.clear();*/
+	delete sourceSpheres;
+	delete targetSpheres;
 }
 
 

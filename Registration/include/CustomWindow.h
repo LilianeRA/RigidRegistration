@@ -25,8 +25,12 @@ class CustomWindow : public WindowGLFW
 		bool showTgtPointCloud = true;
 		std::string sourcePointCloudName{ "" };
 		std::string targetPointCloudName{ "" };
+		const PointCloud* sourceCloud; // for reseting the method
 
-		std::vector<DrawableSpheres*> mOtherSpheres;
+		//std::vector<DrawableSpheres*> mOtherSpheres;
+		DrawableSpheres* originalSourceSpheres = nullptr;
+		DrawableSpheres* sourceSpheres = nullptr;
+		DrawableSpheres* targetSpheres = nullptr;
 
 		static int methodChoice;
 		static int matchChoice;
@@ -40,7 +44,7 @@ class CustomWindow : public WindowGLFW
 
 		void GetActiveMethod(const MethodsData *data);
 		void SetActiveMethod();
-		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);
-		void TransformSpheres(const std::string& pointCloudName, const Eigen::Affine3d& transformation);
+		void TransformSourceSpheres(const Eigen::Affine3d& transformation);
+		void ResetSourceCloud();
 };
 #endif // CUSTOMWINDOW_H
