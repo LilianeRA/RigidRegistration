@@ -11,7 +11,7 @@ void foo(const PointCloud*, const double)
 
 }
 
-RigidRegistration::RigidRegistration(const MethodsData *methodsData)
+RigidRegistration::RigidRegistration(MethodsData *methodsData)
 {
     //ctor
 	data = methodsData;
@@ -23,8 +23,16 @@ RigidRegistration::~RigidRegistration()
     //dtor
 } 
 
-void RigidRegistration::Run()
+MethodsData* RigidRegistration::GetMethodsData()
 {
+    return data;
+}
+
+
+const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
+{
+    std::vector<Eigen::Affine3d> transformations;
+
     MethodsData::MODE mode;
     MethodsData::METHOD method;
     MethodsData::MATCH match;
@@ -78,6 +86,7 @@ void RigidRegistration::Run()
             std::cout << std::scientific << std::setprecision(cout_precision) << "Error improved from " << previousError << " to " << currentError << std::endl;
             // accept transformation
             targetmesh->ApplyTransformation(transformation);
+            transformations.push_back(transformation);
             //sourcemesh->ApplyTransformation(transformation);
             const std::string pointCloudPreffix{std::to_string(currentIterations)+"_"};
             targetmesh->SaveCurrentPoints(DirHandler::JoinPaths(test_directory, pointCloudPreffix));
@@ -121,6 +130,8 @@ void RigidRegistration::Run()
         ++i;
     }
     std::cout << "Final Euclidean error: " << currentError << " correspondences " << correspondences << std::endl;
+
+    return transformations;
 }
 
 void RigidRegistration::Setup()

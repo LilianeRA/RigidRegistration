@@ -8,13 +8,15 @@ class RigidRegistration
 {
     public:
 
-        RigidRegistration(const MethodsData *methodsData);
+        RigidRegistration(MethodsData *methodsData);
         virtual ~RigidRegistration();
 
-        void Run();
+        MethodsData* GetMethodsData();
+
+        const std::vector<Eigen::Affine3d>& Run();
 
     private:
-		const MethodsData* data; // the first time this variable is seted, its done
+		MethodsData* data;
 
         double currIterationWeight = 1e5;
         double maxIterationWeight = 1e5;
@@ -23,7 +25,6 @@ class RigidRegistration
 
         const double initialError = 1e10;
         double trimming = 1.0;
-        int correspondences = 0; 
 
         std::vector<unsigned int> tgt2src_correspondence;
         std::vector<unsigned int> tgt2src_tensorCorrespondence;

@@ -14,7 +14,6 @@ class CustomWindow : public WindowGLFW
 		void SetSourcePointCloud(const PointCloud* pointcloud, const glm::vec3& color);
 		void SetTargetPointCloud(const PointCloud* pointcloud, const glm::vec3& color);
 
-		void SetActiveMethod(const MethodsData *data);
 		void SetRegistration(RigidRegistration *registration);
 	protected:
 		virtual void SetCustomWindow() override;
@@ -35,9 +34,13 @@ class CustomWindow : public WindowGLFW
 		std::vector<std::pair<std::string, bool>> methodConfig;
 		std::vector<std::pair<std::string, bool>> matchConfig;
 		std::vector<std::pair<std::string, bool>> estimationConfig;
+		float ctsf_percentage = 0.0f;
 
 		RigidRegistration *registration = nullptr;
 
+		void GetActiveMethod(const MethodsData *data);
+		void SetActiveMethod();
 		void SetPointCloud(const PointCloud* pointcloud, const std::string& pointCloudName, const glm::vec3& color);
+		void TransformSpheres(const std::string& pointCloudName, const Eigen::Affine3d& transformation);
 };
 #endif // CUSTOMWINDOW_H

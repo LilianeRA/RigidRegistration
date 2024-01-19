@@ -592,7 +592,7 @@ void PointCloud::SaveCurrentPoints(const std::string& filepath_prefix) const
 	if (originalVertices.size() > 0)
 	{
 		std::string fullpathOrig{ filepath_prefix + this->filename + ".ply" };
-		std::cout << fullpathOrig <<"\n";
+		//std::cout << fullpathOrig <<"\n";
 		save_ply(fullpathOrig, originalVertices);
 	}
 }

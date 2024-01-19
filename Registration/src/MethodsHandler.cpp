@@ -55,14 +55,14 @@ void MethodsHandler::Run()
     MethodsData::ESTIMATION estimation;
     data->getActiveMethod(mode, method, match, estimation);
 
-    const PointCloud* sourcemesh = data->getSourcePointCloud();
-    const PointCloud* targetmesh = data->getTargetPointCloud();
 
-    if (mode == MethodsData::MODE::MESHVIEW || mode == MethodsData::MODE::VIDEOVIEW)
+    if (mode == MethodsData::MODE::MESHVIEW) //|| mode == MethodsData::MODE::VIDEOVIEW)
     {
+        const PointCloud* sourcemesh = data->getSourcePointCloud();
+        const PointCloud* targetmesh = data->getTargetPointCloud();
+
         CustomWindow* window = new CustomWindow(false, "View");
         window->InitializeWindow();
-        window->SetActiveMethod(data);
         window->SetRegistration(registration);
         window->SetSourcePointCloud(sourcemesh, glm::vec3(0.5, 0.0, 0.0));
         window->SetTargetPointCloud(targetmesh, glm::vec3(0.0, 0.0, 0.0));

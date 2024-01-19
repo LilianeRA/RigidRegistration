@@ -27,7 +27,7 @@ void CustomWindow::SetTargetPointCloud(const PointCloud* pointcloud, const glm::
 	SetPointCloud(pointcloud, targetPointCloudName, color);
 }
 
-void CustomWindow::SetActiveMethod(const MethodsData* data)
+void CustomWindow::GetActiveMethod(const MethodsData* data)
 {
 	MethodsData::MODE mode;
 	MethodsData::METHOD method;
@@ -60,9 +60,25 @@ void CustomWindow::SetActiveMethod(const MethodsData* data)
 	//estimationConfig.push_back(std::pair<std::string, bool>("SUPER4PCS", (estimation == MethodsData::ESTIMATION::SUPER4PCS ? true : false)));
 }
 
+void CustomWindow::SetActiveMethod()
+{
+	MethodsData* data = this->registration->GetMethodsData();
+	std::string method = methodConfig.at(methodChoice).first; 
+	std::string match = matchConfig.at(matchChoice).first; 
+	std::string estimation = estimationConfig.at(estimationChoice).first; 
+	// remove the blank spaces
+	method.erase(std::remove_if(method.begin(), method.end(), [](unsigned char x) { return std::isspace(x); }), method.end());
+	match.erase (std::remove_if( match.begin(),  match.end(), [](unsigned char x) { return std::isspace(x); }), match.end());
+	estimation.erase(std::remove_if(estimation.begin(), estimation.end(), [](unsigned char x) { return std::isspace(x); }), estimation.end());
+
+	//std::cout << "SetActiveMethod() " << method << ", " << match << ", " << estimation << ", "<< ctsf_percentage <<"\n";
+	data->setMethod(method, match, estimation, ctsf_percentage); 
+}
+
 void CustomWindow::SetRegistration(RigidRegistration* registration)
 {
 	this->registration = registration;
+	GetActiveMethod(registration->GetMethodsData());
 }
 
 void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string &pointCloudName, const glm::vec3 &color) 
@@ -78,6 +94,25 @@ void CustomWindow::SetPointCloud(const PointCloud *pointcloud, const std::string
 		ds->PushSphere(p, color, 0.01);
 	}
 	mOtherSpheres.push_back(ds);
+}
+
+void CustomWindow::TransformSpheres(const std::string& pointCloudName, const Eigen::Affine3d &transformation)
+{
+	for (auto* spheres : mOtherSpheres)
+	{
+		if (pointCloudName.compare(spheres->GetName()) == 0)
+		{
+			glm::dvec3 centroid = spheres->ComputeCentroid();
+			glm::dmat3 transf;
+			for (int i = 0; i < 3; i++)
+				for (int j = 0; j < 3; j++)
+					transf[i][j] = transformation(i, j);
+			for (int sphereIndex = 0; sphereIndex < spheres->GetTotalSpheres(); ++sphereIndex)
+			{
+				spheres->RotateSpherePosition(sphereIndex, transf, centroid);
+			}
+		}
+	}
 }
 
 void CustomWindow::SetCustomWindow()
@@ -114,10 +149,18 @@ void CustomWindow::SetCustomWindow()
 		ImGui::RadioButton(match.first.c_str(), &matchChoice, match_v_button++);
 	}
 
+	ImGui::SliderFloat("CTSF percentage", &ctsf_percentage, 0.0f, 100.0f, "%.0f");
 	if (ImGui::Button("Start Registration"))
 	{
 		std::cout << "Starting: " << estimationConfig.at(estimationChoice).first << "-" << matchConfig.at(matchChoice).first << std::endl;
-		//registration->Run();
+
+		SetActiveMethod();;
+		const std::vector<Eigen::Affine3d>& transformations = registration->Run();
+		// updating the visualization
+		for (const auto& t : transformations)
+		{
+			TransformSpheres(sourcePointCloudName, t);
+		}
 	}
 	ImGui::End();
 }
