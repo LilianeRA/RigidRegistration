@@ -27,6 +27,9 @@ class CustomWindow : public WindowGLFW
 
 		std::vector<DrawableSpheres*> mOtherSpheres;
 
+		int methodChoice = 0;
+		static int matchChoice;
+		static int estimationChoice;
 		std::vector<std::pair<std::string, bool>> methodConfig;
 		std::vector<std::pair<std::string, bool>> matchConfig;
 		std::vector<std::pair<std::string, bool>> estimationConfig;
