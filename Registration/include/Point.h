@@ -12,6 +12,8 @@ class Point
         Point(double x, double y, double z);
         virtual ~Point();
 
+		Point* Copy() const;
+
 		const Eigen::Vector3d& GetPosition() const;
 		const Eigen::Vector3d& GetColor() const;
 		bool IsRemoved();
@@ -58,7 +60,6 @@ class Point
     private:
 		Eigen::Vector3d position;
 		Eigen::Vector3d color;
-		Eigen::Vector3d normal;
 		bool removed = false;
 
 		Tensor* tensor = nullptr;

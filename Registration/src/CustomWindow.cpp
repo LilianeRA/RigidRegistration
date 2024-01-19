@@ -81,6 +81,31 @@ void CustomWindow::GetActiveMethod(const MethodsData* data)
 	//estimationConfig.push_back(std::pair<std::string, bool>("GMM", (estimation == MethodsData::ESTIMATION::GMM ? true : false)));
 	//estimationConfig.push_back(std::pair<std::string, bool>("SPARSEICP", (estimation == MethodsData::ESTIMATION::SPARSEICP ? true : false)));
 	//estimationConfig.push_back(std::pair<std::string, bool>("SUPER4PCS", (estimation == MethodsData::ESTIMATION::SUPER4PCS ? true : false)));
+
+	for (int index = 0; index < methodConfig.size(); index++)
+	{
+		const auto& method = methodConfig.at(index);
+		if (method.second)
+		{
+			methodChoice = index;
+		}
+	}
+	for (int index = 0; index < matchConfig.size(); index++)
+	{
+		const auto& match = matchConfig.at(index);
+		if (match.second)
+		{
+			matchChoice = index;
+		}
+	}
+	for (int index = 0; index < estimationConfig.size(); index++)
+	{
+		const auto& estimation = estimationConfig.at(index);
+		if (estimation.second)
+		{
+			estimationChoice = index;
+		}
+	}
 }
 
 void CustomWindow::SetActiveMethod()
@@ -94,8 +119,8 @@ void CustomWindow::SetActiveMethod()
 	match.erase (std::remove_if( match.begin(),  match.end(), [](unsigned char x) { return std::isspace(x); }), match.end());
 	estimation.erase(std::remove_if(estimation.begin(), estimation.end(), [](unsigned char x) { return std::isspace(x); }), estimation.end());
 
-	//std::cout << "SetActiveMethod() " << method << ", " << match << ", " << estimation << ", "<< ctsf_percentage <<"\n";
-	data->setMethod(method, match, estimation, ctsf_percentage);
+	std::cout << "SetActiveMethod() " << method << ", " << match << ", " << estimation << ", "<< ctsf_percentage <<"\n";
+	data->setMethod(method, match, estimation, ctsf_percentage, true);
 	registration->Reset();
 }
 

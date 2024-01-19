@@ -70,7 +70,7 @@ void MethodsData::setMode(const std::string &mode)
 	}
 }
 
-void MethodsData::setMethod(const std::string &method, const std::string &match, const std::string &estimation, const double ctsf_percentage)
+void MethodsData::setMethod(const std::string &method, const std::string &match, const std::string &estimation, const double ctsf_percentage, bool reset)
 {
     if(method.find("ICP")   != std::string::npos) {this->method = METHOD::ICP; std::cout<<"Method: ICP"<<std::endl;}
     if(method.find("SWC")   != std::string::npos) {this->method = METHOD::SWC; std::cout<<"Method: SWC"<<std::endl;}
@@ -110,6 +110,62 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
         exit(EXIT_FAILURE);
     }
     this->ctsf_percentage = ctsf_percentage;
+
+    if (reset) Setup();
+}
+
+void MethodsData::Setup()
+{
+    // Build the tensors for 
+    // Method       Estimation      Match       
+    // ICP          ICP             CTSF    -> ICP-CTSF
+    // ICP          ICP             LIEDIR  -> ICP-LIEDIR
+    // ICP          ICP             LIEIND  -> ICP-LIEIND
+    // ICP          ICP             GONG    -> ICP-GONG
+    // ICP          ICP             CALVO   -> ICP-CALVO
+    // ICP          ICP             LOVRIC  -> ICP-LOVRIC
+    // 
+    // ICP          SWC             ICP     -> SWC-ICP
+    // ICP          SWC             CTSF    -> SWC-CTSF
+    // ICP          SWC             LIEDIR  -> SWC-LIEDIR
+    // ICP          SWC             LIEIND  -> SWC-LIEIND
+    // ICP          SWC             GONG    -> SWC-GONG
+    // ICP          SWC             CALVO   -> SWC-CALVO
+    // ICP          SWC             LOVRIC  -> SWC-LOVRIC
+    if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC ||
+        this->match == MethodsData::MATCH::LIEDIR || this->match == MethodsData::MATCH::LIEIND ||
+        this->match == MethodsData::MATCH::GONG || this->match == MethodsData::MATCH::CALVO || this->match == MethodsData::MATCH::LOVRIC)
+    {
+        if (tensorParametersSeted)
+        {
+            PRINT("Estimating tensors for source point cloud...");
+            TensorEstimator::Estimate(sourcemesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
+            PRINT("Estimating tensors for target point cloud...");
+            TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
+            PRINT("Estimation done");
+
+            /*const auto& sp = sourcemesh->GetPoints();
+            const auto& tp = targetmesh->GetPoints();
+            for (int t_index = 0; t_index < 3; ++t_index)
+            {
+                std::cout << std::setprecision(15) << "modelListAux tensor " << t_index << "\n" << *sp.at(t_index)->GetTensorMatrix() << std::endl;
+                std::cout << "dataListAux  tensor " << t_index << "\n" << *tp.at(t_index)->GetTensorMatrix() << std::endl;
+            }*/
+            //int nada; std::cin >> nada;
+            if (estimation == MethodsData::ESTIMATION::SWC)
+            {
+                PRINT("For SWC estimation, setting the tensor distance list...");
+                sourcemesh->SetCTSF_DistanceList();
+                targetmesh->SetCTSF_DistanceList();
+                PRINT("Done");
+            }
+        }
+        else
+        {
+            PRINT_ERROR("Error: cant't initialize point clouds without estimating tensors. SetTensorParameters before SetPointClouds.");
+            exit(-1);
+        }
+    }
 }
 
 void MethodsData::setGTfile(const std::string &gtfilepath)
@@ -238,56 +294,7 @@ void MethodsData::initInput(int downscalestep)
         targetmesh->SaveInput(DirHandler::JoinPaths(this->maindir, this->testname));
     }
 
-    // Build the tensors for 
-    // Method       Estimation      Match       
-    // ICP          ICP             CTSF    -> ICP-CTSF
-    // ICP          ICP             LIEDIR  -> ICP-LIEDIR
-    // ICP          ICP             LIEIND  -> ICP-LIEIND
-    // ICP          ICP             GONG    -> ICP-GONG
-    // ICP          ICP             CALVO   -> ICP-CALVO
-    // ICP          ICP             LOVRIC  -> ICP-LOVRIC
-    // 
-    // ICP          SWC             ICP     -> SWC-ICP
-    // ICP          SWC             CTSF    -> SWC-CTSF
-    // ICP          SWC             LIEDIR  -> SWC-LIEDIR
-    // ICP          SWC             LIEIND  -> SWC-LIEIND
-    // ICP          SWC             GONG    -> SWC-GONG
-    // ICP          SWC             CALVO   -> SWC-CALVO
-    // ICP          SWC             LOVRIC  -> SWC-LOVRIC
-    if (this->match == MethodsData::MATCH::CTSF || this->estimation == MethodsData::ESTIMATION::SWC ||
-        this->match == MethodsData::MATCH::LIEDIR || this->match == MethodsData::MATCH::LIEIND ||
-        this->match == MethodsData::MATCH::GONG || this->match == MethodsData::MATCH::CALVO || this->match == MethodsData::MATCH::LOVRIC)
-    {
-        if (tensorParametersSeted)
-        {
-            PRINT("Estimating tensors for source point cloud...");
-            TensorEstimator::Estimate(sourcemesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
-            PRINT("Estimating tensors for target point cloud...");
-            TensorEstimator::Estimate(targetmesh, false, alphacut_radians, alphaellipse_radians, sigmaN, ctsf_percentage);
-            PRINT("Estimation done");
-
-            /*const auto& sp = sourcemesh->GetPoints();
-            const auto& tp = targetmesh->GetPoints();
-            for (int t_index = 0; t_index < 3; ++t_index)
-            {
-                std::cout << std::setprecision(15) << "modelListAux tensor " << t_index << "\n" << *sp.at(t_index)->GetTensorMatrix() << std::endl;
-                std::cout << "dataListAux  tensor " << t_index << "\n" << *tp.at(t_index)->GetTensorMatrix() << std::endl;
-            }*/
-            //int nada; std::cin >> nada;
-            if (estimation == MethodsData::ESTIMATION::SWC)
-            {
-                PRINT("For SWC estimation, setting the tensor distance list...");
-                sourcemesh->SetCTSF_DistanceList();
-                targetmesh->SetCTSF_DistanceList();
-                PRINT("Done");
-            }
-        }
-        else
-        {
-            PRINT_ERROR("Error: cant't initialize point clouds without estimating tensors. SetTensorParameters before SetPointClouds.");
-            exit(-1);
-        }
-    }
+    Setup();
 }
 
 void MethodsData::saveParameters() const

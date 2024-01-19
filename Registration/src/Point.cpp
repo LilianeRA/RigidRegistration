@@ -22,6 +22,17 @@ Point::~Point()
     //dtor
 }
 
+Point* Point::Copy() const
+{
+	Point* copyPoint = new Point(position.x(), position.y(), position.z());
+	copyPoint->SetColor(color);
+	copyPoint->SetAsRemoved(removed);
+	if (tensor)
+		copyPoint->tensor = tensor->Copy();
+	else std::cout << "null ";
+	return copyPoint;
+}
+
 const Eigen::Vector3d& Point::GetPosition() const
 {
 	return this->position;

@@ -74,9 +74,10 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
             std::cout << currIterationWeight << " <= " << minIterationWeight << " = min. weight\n";
             currIterationWeight = 0.0;
         }
-
+        //std::cout << "MatchPointClouds\n";
         MatchPointClouds(sourcemesh, targetmesh);
         //const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
+        //std::cout << "estimationFunction\n";
         const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, src2tgt_correspondence, currIterationWeight);
         //std::cout << std::scientific << std::setprecision(cout_precision) << "transformation\n" << transformation.matrix() << std::endl;
         ++currentErrorIterations;
@@ -84,6 +85,7 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
 
         previousError = currentError;
         // compute error
+        //std::cout << "RMS_Error\n";
         //currentError = RMS_Error(sourcemesh, targetmesh, tgt2src_correspondence, tgt2src_tensorCorrespondence, transformation, currIterationWeight);
         currentError = RMS_Error(sourcemesh, targetmesh, src2tgt_correspondence, src2tgt_tensorCorrespondence, transformation, currIterationWeight);
 
@@ -158,6 +160,7 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
 
 void RigidRegistration::Setup()
 {
+    std::cout << "RigidRegistration::Setup()\n";
     MethodsData::MODE mode;
     MethodsData::METHOD method;
     MethodsData::MATCH match;
@@ -277,6 +280,7 @@ void RigidRegistration::Setup()
         //Estimators::SetTensorCorrespondenceList(data->getSourcePointCloud(), tgt2src_tensorCorrespondence);
         Estimators::SetTensorCorrespondenceList(data->getTargetPointCloud(), src2tgt_tensorCorrespondence);
     }
+
 }
 
 void RigidRegistration::SetTensorCorrespondenceList()

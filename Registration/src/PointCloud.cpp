@@ -67,13 +67,13 @@ PointCloud* PointCloud::Copy() const
 	//std::copy(originalVertices.begin(), originalVertices.end(), std::back_inserter(copyPointCloud->originalVertices));
 	for (const Point* point : originalVertices)
 	{
-		const auto &pos = point->GetPosition();
-		Point* copyPoint = new Point(pos.x(), pos.y(), pos.z());
+		// Do I need to copy the tensor? Yes
+		Point* copyPoint = point->Copy();
 		copyPointCloud->originalVertices.push_back(copyPoint);
 	}
 	std::copy(distanceList.begin(), distanceList.end(), std::back_inserter(copyPointCloud->distanceList));
 	std::copy(PureCTSF_distanceList.begin(), PureCTSF_distanceList.end(), std::back_inserter(copyPointCloud->PureCTSF_distanceList));
-	// Do I need to copy the tensor?
+
 
 	copyPointCloud->precision = precision;
 	copyPointCloud->skipstep = skipstep;

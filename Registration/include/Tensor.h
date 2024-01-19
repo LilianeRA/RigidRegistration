@@ -8,6 +8,8 @@ class Tensor
     public:
         Tensor();
         virtual ~Tensor();
+
+        Tensor* Copy() const;
 	    
         void Update(const Eigen::Matrix3d& tensorMatrix);
         void UpdateLieDirect(const Eigen::Vector3d& point_position, const double weight, bool verbose);

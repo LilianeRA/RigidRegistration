@@ -13,6 +13,30 @@ Tensor::~Tensor()
     //dtor
 }
 
+Tensor* Tensor::Copy() const
+{
+    Tensor* copyTensor = new Tensor();
+
+    copyTensor->matrix = this->matrix;
+    copyTensor->eigenValues = this->eigenValues;
+    copyTensor->eigenVectors = this->eigenVectors;
+
+    copyTensor->linearCoefficient = this->linearCoefficient;
+    copyTensor->planarCoefficient = this->planarCoefficient;
+    copyTensor->sphericalCoefficient = this->sphericalCoefficient;
+
+    copyTensor->vm = this->vm;
+    copyTensor->J1 = this->J1;
+    copyTensor->J2 = this->J2;
+    copyTensor->J3 = this->J3;
+    copyTensor->weight = this->weight;
+
+    copyTensor->lieMatrix = this->lieMatrix;
+    copyTensor->lieEigenValues = this->lieEigenValues;
+
+    return copyTensor;
+}
+
 void Tensor::Update(const Eigen::Matrix3d& tensorMatrix)
 {
     matrix = tensorMatrix.normalized();
