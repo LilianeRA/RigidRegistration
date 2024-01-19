@@ -17,7 +17,7 @@ Estimators::~Estimators()
 }
 
 const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const PointCloud* targetmesh, 
-    const std::vector<unsigned int>& tgt2src_correspondence, const double weight)
+    const std::vector<unsigned int>& src2tgt_correspondence, const double weight)
 {
     //std::cout << "ICP_Besl\n";
     // TODO: trimming
@@ -28,10 +28,10 @@ const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const P
 
     std::vector<Point*> correspondentPoints;
     //unsigned int i = 0;
-    for (const unsigned int src_index : tgt2src_correspondence)
+    /*for (const unsigned int src_index : tgt2src_correspondence)
     {
         correspondentPoints.push_back(source_points.at(src_index));
-        /*if (i <= 10)
+        if (i <= 10)
         {
             std::cout << std::setprecision(15) << i << " " << src_index << std::endl;
             std::cout << target_points.at(i)->GetPosition().transpose() << std::endl;
@@ -39,14 +39,20 @@ const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const P
             std::cout << correspondentPoints.back()->GetPosition().transpose() << std::endl;
 
             ++i;
-        }*/
+        }
+    }*/
+    for (const unsigned int tgt_index : src2tgt_correspondence)
+    {
+        correspondentPoints.push_back(target_points.at(tgt_index));
     }
 
-    Eigen::Vector3d targetCentroid = ComputeCenteroid(target_points);
+    ////////Eigen::Vector3d targetCentroid = ComputeCenteroid(target_points);
+    Eigen::Vector3d sourceCentroid = ComputeCenteroid(source_points);
     Eigen::Vector3d correspCentroid = ComputeCenteroid(correspondentPoints, true);
     //std::cout << std::setprecision(15) << "dataCenterOfMass " << targetCentroid.transpose() << "\n";
     //std::cout << "YCenterOfMass    " << correspCentroid.transpose() << "\n";
-    const Eigen::Matrix3d covariance = ComputeCovariance(target_points, correspondentPoints, targetCentroid, correspCentroid);
+    //////const Eigen::Matrix3d covariance = ComputeCovariance(target_points, correspondentPoints, targetCentroid, correspCentroid);
+    const Eigen::Matrix3d covariance = ComputeCovariance(source_points, correspondentPoints, sourceCentroid, correspCentroid);
     //std::cout << "covariance\n" << covariance << "\n";
     const Eigen::Matrix4d quaternionMatrix = ComputeQuaternionFromCovariance(covariance);
     //std::cout << "quaternionMat\n" << quaternionMatrix << "\n";
@@ -60,14 +66,15 @@ const Eigen::Affine3d Estimators::ICP_Besl(const PointCloud* sourcemesh, const P
     Eigen::Quaterniond rotationQuaternion{ greatestEigenVec.x(), greatestEigenVec.y(), greatestEigenVec.z(), greatestEigenVec.w() };
     //std::cout << "rotationQuaternion\n" << rotationQuaternion.matrix() << "\n";
 
-    Eigen::Affine3d transformation = Eigen::Affine3d(Eigen::Translation3d(correspCentroid - rotationQuaternion * targetCentroid) * rotationQuaternion);
+    ////////Eigen::Affine3d transformation = Eigen::Affine3d(Eigen::Translation3d(correspCentroid - rotationQuaternion * targetCentroid) * rotationQuaternion);
+    Eigen::Affine3d transformation = Eigen::Affine3d(Eigen::Translation3d(correspCentroid - rotationQuaternion * sourceCentroid) * rotationQuaternion);
     //std::cout << "transformation\n" << transformation.matrix() << "\n";
 
     return transformation;
 }
 
 const Eigen::Affine3d Estimators::SWC_Akio(const PointCloud* sourcemesh, const PointCloud* targetmesh,
-    const std::vector<unsigned int>& tgt2src_correspondence, const double weight)
+    const std::vector<unsigned int>& src2tgt_correspondence, const double weight)
 {
     //std::cout << "SWC_Akio\n";
     std::cout << std::setprecision(15);
@@ -77,10 +84,10 @@ const Eigen::Affine3d Estimators::SWC_Akio(const PointCloud* sourcemesh, const P
 
     std::vector<Point*> correspondentPoints;
     //unsigned int i = 0;
-    for (const unsigned int src_index : tgt2src_correspondence)
+    /*for (const unsigned int src_index : tgt2src_correspondence)
     {
         correspondentPoints.push_back(source_points.at(src_index));
-        /*if (i <= 5)
+        if (i <= 5)
         {
             std::cout << std::setprecision(15) << i << " " << src_index << std::endl;
             std::cout << target_points.at(i)->GetPosition().transpose() << std::endl;
@@ -88,20 +95,28 @@ const Eigen::Affine3d Estimators::SWC_Akio(const PointCloud* sourcemesh, const P
             std::cout << correspondentPoints.back()->GetPosition().transpose() << std::endl;
 
             ++i;
-        }*/
+        }
+    }*/
+    for (const unsigned int tgt_index : src2tgt_correspondence)
+    {
+        correspondentPoints.push_back(target_points.at(tgt_index));
     }
-    Eigen::Vector3d targetCentroid = ComputeCenteroid(target_points);
+
+    ////////Eigen::Vector3d targetCentroid = ComputeCenteroid(target_points);
+    Eigen::Vector3d sourceCentroid = ComputeCenteroid(source_points);
     Eigen::Vector3d correspCentroid = ComputeCenteroid(correspondentPoints);
     //std::cout << "dataCenterOfMass " << targetCentroid.transpose() << "\n";
     //std::cout << "YCenterOfMass    " << correspCentroid.transpose() << "\n";
-    Eigen::Matrix3d covariance = ComputeCovariance(target_points, correspondentPoints, targetCentroid, correspCentroid);
+    ///////////////Eigen::Matrix3d covariance = ComputeCovariance(target_points, correspondentPoints, targetCentroid, correspCentroid);
+    Eigen::Matrix3d covariance = ComputeCovariance(source_points, correspondentPoints, sourceCentroid, correspCentroid);
     //std::cout << "covariance\n" << covariance << "\n";
 
     if (std::abs(weight) > 0.0000077) 
     {
         //std::cout << "YCenterOfMass2 " << CTSF_CorrespCentroid.transpose() << std::endl;
         // Compute the CTSF-based covariance matrix between both point clouds
-        const Eigen::Matrix3d cross_covariance = ComputeCovariance(target_points, CTSFcorrespondentPoints, targetCentroid, CTSF_CorrespCentroid);
+        ////////////////const Eigen::Matrix3d cross_covariance = ComputeCovariance(target_points, CTSFcorrespondentPoints, targetCentroid, CTSF_CorrespCentroid);
+        const Eigen::Matrix3d cross_covariance = ComputeCovariance(source_points, CTSFcorrespondentPoints, sourceCentroid, CTSF_CorrespCentroid);
         //std::cout << "covariance2" << std::endl;
         //std::cout << std::setprecision(15) << cross_covariance.matrix() << std::endl;
 
@@ -130,20 +145,31 @@ const Eigen::Affine3d Estimators::SWC_Akio(const PointCloud* sourcemesh, const P
     //std::cout << "rotationQuaternion\n" << rotationQuaternion.matrix() << "\n";
 
 
-    Eigen::Affine3d transformation = Eigen::Affine3d(Eigen::Translation3d(correspCentroid - rotationQuaternion * targetCentroid) * rotationQuaternion);
+    /////////////Eigen::Affine3d transformation = Eigen::Affine3d(Eigen::Translation3d(correspCentroid - rotationQuaternion * targetCentroid) * rotationQuaternion);
+    Eigen::Affine3d transformation = Eigen::Affine3d(Eigen::Translation3d(correspCentroid - rotationQuaternion * sourceCentroid) * rotationQuaternion);
     //std::cout << "transformation\n" << transformation.matrix() << "\n";
 
     //std::cout << "Enter number: "; int nada; std::cin >> nada;
     return transformation;
 }
 
-void Estimators::SetTensorCorrespondenceList(const PointCloud* sourcemesh, const std::vector<unsigned int>& tgt2src_tensorCorrespondence)
+/*void Estimators::SetTensorCorrespondenceList(const PointCloud* sourcemesh, const std::vector<unsigned int>& tgt2src_tensorCorrespondence)
 {
     CTSFcorrespondentPoints.clear();
     const auto& source_points = sourcemesh->GetPoints();
     for (const unsigned int src_index : tgt2src_tensorCorrespondence)
     {
         CTSFcorrespondentPoints.push_back(source_points.at(src_index));
+    }
+    CTSF_CorrespCentroid = ComputeCenteroid(CTSFcorrespondentPoints);
+}*/
+void Estimators::SetTensorCorrespondenceList(const PointCloud* targetmesh, const std::vector<unsigned int>& src2tgt_tensorCorrespondence)
+{
+    CTSFcorrespondentPoints.clear();
+    const auto& target_points = targetmesh->GetPoints();
+    for (const unsigned int tgt_index : src2tgt_tensorCorrespondence)
+    {
+        CTSFcorrespondentPoints.push_back(target_points.at(tgt_index));
     }
     CTSF_CorrespCentroid = ComputeCenteroid(CTSFcorrespondentPoints);
 }

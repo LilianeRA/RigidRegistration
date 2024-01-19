@@ -13,11 +13,12 @@ class Estimators
         static const Eigen::Vector3d ComputeCenteroid(const std::vector<Point*> &points, bool verbose = false);
 
         static const Eigen::Affine3d ICP_Besl(const PointCloud* sourcemesh, const PointCloud* targetmesh, 
-            const std::vector<unsigned int> &tgt2src_correspondence, const double weight); // weight is ignored
+            const std::vector<unsigned int> &src2tgt_correspondence, const double weight); // weight is ignored
         static const Eigen::Affine3d SWC_Akio(const PointCloud* sourcemesh, const PointCloud* targetmesh, 
-            const std::vector<unsigned int> &tgt2src_correspondence, const double weight);
+            const std::vector<unsigned int> & src2tgt_correspondence, const double weight);
     
-        static void SetTensorCorrespondenceList(const PointCloud* sourcemesh, const std::vector<unsigned int> & tgt2src_tensorCorrespondence); // for SWC
+        //static void SetTensorCorrespondenceList(const PointCloud* sourcemesh, const std::vector<unsigned int> & tgt2src_tensorCorrespondence); // for SWC
+        static void SetTensorCorrespondenceList(const PointCloud* targetmesh, const std::vector<unsigned int>& src2tgt_tensorCorrespondence); // for SWC
     private:
         // for SWC
         static std::vector<Point*> CTSFcorrespondentPoints;

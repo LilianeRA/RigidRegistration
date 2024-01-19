@@ -441,6 +441,8 @@ int main(int args, char** argv)
     LOG("Building source and target point clouds...");
 
     //float scale = normalize(point_cloud_src);
+
+    // source/data and target/model
     build_new_pointcloud(point_cloud_src, input_dir, filename_src, downscale, rotation, translation,
                          holes, radius, noise, 7, outlier, 2, seeds);
     build_new_pointcloud(point_cloud_tgt, input_dir, filename_tgt, downscale, 0, '0',

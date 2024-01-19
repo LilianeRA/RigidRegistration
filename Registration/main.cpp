@@ -32,6 +32,8 @@ namespace fs = std::filesystem;
 #endif
 
 
+// source/data and target/model
+
 /**
 ./RigidRegistration -sourcemesh=bunny000.ply -targetmesh=bunny045.ply -totalholes=1 -holeradius=0.03 -datadir E:\GIT\RigidRegistration\BuildInput\point_clouds
 ./RigidRegistration -sourcemesh=bunny000.dat -targetmesh=bunny045.dat -totalholes=2 -holeradius=0.03 -downscalestep=0

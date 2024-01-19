@@ -102,15 +102,20 @@ void CustomWindow::TransformSpheres(const std::string& pointCloudName, const Eig
 	{
 		if (pointCloudName.compare(spheres->GetName()) == 0)
 		{
-			glm::dvec3 centroid = spheres->ComputeCentroid();
+			glm::dvec3 translation;
 			glm::dmat3 transf;
 			for (int i = 0; i < 3; i++)
+			{
 				for (int j = 0; j < 3; j++)
-					transf[i][j] = transformation(i, j);
+					transf[i][j] = transformation(j, i);
+				translation[i] = transformation(i, 3);
+			}
 			for (int sphereIndex = 0; sphereIndex < spheres->GetTotalSpheres(); ++sphereIndex)
 			{
-				spheres->RotateSpherePosition(sphereIndex, transf, centroid);
+				spheres->RotateSpherePosition(sphereIndex, transf, spheres->ComputeCentroid());
+				spheres->TranslateSpherePosition(sphereIndex, translation);
 			}
+			break;
 		}
 	}
 }

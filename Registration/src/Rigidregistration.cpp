@@ -39,13 +39,13 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
     MethodsData::ESTIMATION estimation;
     data->getActiveMethod(mode, method, match, estimation);
 
-    const PointCloud* sourcemesh = data->getSourcePointCloud();
-    PointCloud* targetmesh = data->getTargetPointCloud()->Copy();
-    //PointCloud* sourcemesh = data->getSourcePointCloud()->Copy();
-    //const PointCloud* targetmesh = data->getTargetPointCloud();
+    //const PointCloud* sourcemesh = data->getSourcePointCloud();
+    //PointCloud* targetmesh = data->getTargetPointCloud()->Copy();
+    PointCloud* sourcemesh = data->getSourcePointCloud()->Copy();
+    const PointCloud* targetmesh = data->getTargetPointCloud(); // The target doesn't move
 
     const std::string test_directory = data->GetTestDirectory();
-    std::cout << "test_directory " << test_directory << "\n";
+    //std::cout << "test_directory " << test_directory << "\n";
     
     unsigned int currentErrorIterations = 0;
     unsigned int currentIterations = 0;
@@ -70,14 +70,16 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
         }
 
         MatchPointClouds(sourcemesh, targetmesh);
-        const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
+        //const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, tgt2src_correspondence, currIterationWeight);
+        const Eigen::Affine3d transformation = estimationFunction(sourcemesh, targetmesh, src2tgt_correspondence, currIterationWeight);
         //std::cout << std::scientific << std::setprecision(cout_precision) << "transformation\n" << transformation.matrix() << std::endl;
         ++currentErrorIterations;
         ++currentIterations;
 
         previousError = currentError;
         // compute error
-        currentError = RMS_Error(sourcemesh, targetmesh, tgt2src_correspondence, tgt2src_tensorCorrespondence, transformation, currIterationWeight);
+        //currentError = RMS_Error(sourcemesh, targetmesh, tgt2src_correspondence, tgt2src_tensorCorrespondence, transformation, currIterationWeight);
+        currentError = RMS_Error(sourcemesh, targetmesh, src2tgt_correspondence, src2tgt_tensorCorrespondence, transformation, currIterationWeight);
 
         std::cout << "It. " << currentIterations << ": ";
         // the method can be stuck improving the error in the 9th decimal. If this happens, it can do it up to 200 times.
@@ -85,11 +87,15 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
         {
             std::cout << std::scientific << std::setprecision(cout_precision) << "Error improved from " << previousError << " to " << currentError << std::endl;
             // accept transformation
-            targetmesh->ApplyTransformation(transformation);
+            //targetmesh->ApplyTransformation(transformation);
+            //const std::string pointCloudPreffix{std::to_string(currentIterations)+"_"};
+            //targetmesh->SaveCurrentPoints(DirHandler::JoinPaths(test_directory, pointCloudPreffix));
+
+            sourcemesh->ApplyTransformation(transformation);
+            const std::string pointCloudPreffix{ std::to_string(currentIterations) + "_" };
+            sourcemesh->SaveCurrentPoints(DirHandler::JoinPaths(test_directory, pointCloudPreffix));
+
             transformations.push_back(transformation);
-            //sourcemesh->ApplyTransformation(transformation);
-            const std::string pointCloudPreffix{std::to_string(currentIterations)+"_"};
-            targetmesh->SaveCurrentPoints(DirHandler::JoinPaths(test_directory, pointCloudPreffix));
         }
         else
         {
@@ -114,14 +120,24 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
     }
 
     // after the resgistration, compute the correspondent points
-    distanceFunction = Point::EuclideanDistance;
+    distanceFunction = Point::EuclideanDistance; // For the Match Function to update the correspondence list, now based on euclidean distance
     preMatchFunction = foo;
-    MatchPointClouds(data->getTargetPointCloud(), targetmesh); // updates the correspondence list, now based on euclidean distance
-    currentError = RootMeanSquare(data->getTargetPointCloud(), targetmesh, tgt2src_correspondence);
+    //MatchPointClouds(data->getTargetPointCloud(), targetmesh); 
+    //currentError = RootMeanSquare(data->getTargetPointCloud(), targetmesh, tgt2src_correspondence);
+    MatchPointClouds(data->getSourcePointCloud(), targetmesh);
+    currentError = RootMeanSquare(data->getSourcePointCloud(), targetmesh, src2tgt_correspondence);
 
     unsigned int i = 0;
     unsigned int correspondences = 0;
-    for (unsigned int t : tgt2src_correspondence) 
+    /*for (unsigned int t : tgt2src_correspondence)
+    {
+        if (i == t) 
+        {
+            correspondences++;
+        }
+        ++i;
+    }*/
+    for (unsigned int t : src2tgt_correspondence)
     {
         if (i == t) 
         {
@@ -252,14 +268,15 @@ void RigidRegistration::Setup()
             exit(-1);
         }
         SetTensorCorrespondenceList();
-        Estimators::SetTensorCorrespondenceList(data->getSourcePointCloud(), tgt2src_tensorCorrespondence);
+        //Estimators::SetTensorCorrespondenceList(data->getSourcePointCloud(), tgt2src_tensorCorrespondence);
+        Estimators::SetTensorCorrespondenceList(data->getTargetPointCloud(), src2tgt_tensorCorrespondence);
     }
 }
 
 void RigidRegistration::SetTensorCorrespondenceList()
 {
     // building the correspondence list
-    tgt2src_tensorCorrespondence.clear();
+    /*tgt2src_tensorCorrespondence.clear();
 
     const PointCloud* sourcemesh = data->getSourcePointCloud();
     const PointCloud* targetmesh = data->getTargetPointCloud();
@@ -281,13 +298,37 @@ void RigidRegistration::SetTensorCorrespondenceList()
                 tgt2src_tensorCorrespondence.back() = sourceCounter;
             }
         }
+    }*/
+    // building the correspondence list
+    src2tgt_tensorCorrespondence.clear();
+
+    const PointCloud* sourcemesh = data->getSourcePointCloud();
+    const PointCloud* targetmesh = data->getTargetPointCloud();
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+    for (unsigned int sourceCounter = 0; sourceCounter < source_points.size(); ++sourceCounter)
+    {
+        const Point* src_pt = source_points.at(sourceCounter);
+        src2tgt_tensorCorrespondence.push_back(sourceCounter);
+
+        double distance = DBL_MAX;
+        for (unsigned int targetCounter = 0; targetCounter < target_points.size(); ++targetCounter)
+        {
+            const Point* tgt_pt = target_points.at(targetCounter);
+            double d = Point::PureCTSF_TensorDistance(src_pt, tgt_pt);
+            if (d < distance)
+            {
+                distance = d;
+                src2tgt_tensorCorrespondence.back() = targetCounter;
+            }
+        }
     }
 }
 
 void RigidRegistration::MatchPointClouds(const PointCloud* sourcemesh, const PointCloud* targetmesh)
 {
     // building the correspondence list
-    tgt2src_correspondence.clear();
+    /*tgt2src_correspondence.clear();
 
     //const PointCloud* sourcemesh = data->getSourcePointCloud();
     //const PointCloud* targetmesh = data->getTargetPointCloud();
@@ -326,10 +367,10 @@ void RigidRegistration::MatchPointClouds(const PointCloud* sourcemesh, const Poi
                     distanceFunction(src_pt, tgt_pt, currIterationWeight, true);
                     std::cout << "tc " << targetCounter << " sc " << sourceCounter << " d " << distance << std::endl;
                     std::cout << "Continue: "; int nada; std::cin >> nada;
-                }*/
+                }* /
             }
         }
-    }
+    }*/
     
     /*for (int i = 0; i < tgt2src_correspondence.size(); i++)
     {
@@ -363,14 +404,51 @@ void RigidRegistration::MatchPointClouds(const PointCloud* sourcemesh, const Poi
             std::cout << a << " ";
         });*/
 
+
+
+    // building the correspondence list
+    src2tgt_correspondence.clear();
+
+    preMatchFunction(sourcemesh, currIterationWeight);
+    preMatchFunction(targetmesh, currIterationWeight);
+
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+    for (unsigned int sourceCounter = 0; sourceCounter < source_points.size(); ++sourceCounter)
+    {
+        const Point* src_pt = source_points.at(sourceCounter);
+        if (!src_pt)
+        {
+            std::cout << "No src_point! " << sourceCounter << std::endl;
+            exit(-1);
+        }
+        src2tgt_correspondence.push_back(sourceCounter);
+
+        double distance = DBL_MAX;
+        for (unsigned int targetCounter = 0; targetCounter < target_points.size(); ++targetCounter)
+        {
+            const Point* tgt_pt = target_points.at(targetCounter);
+            if (!tgt_pt)
+            {
+                std::cout << "No tgt_pt! " << targetCounter << std::endl;
+                exit(-1);
+            }
+            double d = distanceFunction(src_pt, tgt_pt, currIterationWeight, false);
+            if (d < distance)
+            {
+                distance = d;
+                src2tgt_correspondence.back() = targetCounter;
+            }
+        }
+    }
 }
 
 double RigidRegistration::RootMeanSquareOfTransformation(const PointCloud* sourcemesh, const PointCloud* targetmesh,
-    const std::vector<unsigned int>& tgt2src_correspondence,
-    const std::vector<unsigned int>& tgt2src_tensorCorrespondence,
+    const std::vector<unsigned int>& src2tgt_correspondence,
+    const std::vector<unsigned int>& src2tgt_tensorCorrespondence,
     const Eigen::Affine3d& transformation, const double weight)
- {
-    const auto& source_points = sourcemesh->GetPoints();
+{
+    /*const auto& source_points = sourcemesh->GetPoints();
     const auto& target_points = targetmesh->GetPoints();
 
     double error = 0;
@@ -387,15 +465,33 @@ double RigidRegistration::RootMeanSquareOfTransformation(const PointCloud* sourc
         error += residual.squaredNorm();
     }
     error /= (double) tgt2src_correspondence.size();
+    return std::sqrt(error);*/
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+
+    double error = 0;
+    Eigen::Vector3d sourceCentroid = Estimators::ComputeCenteroid(source_points);
+
+    for (unsigned int index = 0; index < src2tgt_correspondence.size(); ++index)
+    {
+        Eigen::Vector3d sourcePoint = source_points.at(index)->GetPosition();
+        Eigen::Vector3d targetPoint = target_points.at(src2tgt_correspondence.at(index))->GetPosition();
+        sourcePoint -= sourceCentroid;
+        sourcePoint = transformation * sourcePoint;
+        sourcePoint += sourceCentroid;
+        Eigen::Vector3d residual = targetPoint - sourcePoint;
+        error += residual.squaredNorm();
+    }
+    error /= (double)src2tgt_correspondence.size();
     return std::sqrt(error);
 }
 
 double RigidRegistration::RootMeanSquareSWC(const PointCloud* sourcemesh, const PointCloud* targetmesh,
-    const std::vector<unsigned int>& tgt2src_correspondence,
-    const std::vector<unsigned int>& tgt2src_tensorCorrespondence,
+    const std::vector<unsigned int>& src2tgt_correspondence,
+    const std::vector<unsigned int>& src2tgt_tensorCorrespondence,
     const Eigen::Affine3d& transformation, const double weight)
 {
-    const auto& source_points = sourcemesh->GetPoints();
+    /*const auto& source_points = sourcemesh->GetPoints();
     const auto& target_points = targetmesh->GetPoints();
 
     double error = 0;
@@ -417,13 +513,38 @@ double RigidRegistration::RootMeanSquareSWC(const PointCloud* sourcemesh, const 
     }
 
     error /= (double)tgt2src_correspondence.size();
+    return std::sqrt(error);*/
+
+
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+
+    double error = 0;
+    Eigen::Vector3d sourceCentroid = Estimators::ComputeCenteroid(source_points);
+
+    for (unsigned int index = 0; index < src2tgt_correspondence.size(); ++index)
+    {
+        Eigen::Vector3d sourcePoint = source_points.at(index)->GetPosition();
+        Eigen::Vector3d targetPoint = target_points.at(src2tgt_correspondence.at(index))->GetPosition();
+        if (std::abs(weight) > 0.0000077)
+        {
+            targetPoint = (targetPoint + weight * target_points.at(src2tgt_tensorCorrespondence.at(index))->GetPosition()) / (weight + 1);
+        }
+        sourcePoint -= sourceCentroid;
+        sourcePoint = transformation * sourcePoint;
+        sourcePoint += sourceCentroid;
+        Eigen::Vector3d residual = targetPoint - sourcePoint;
+        error += residual.squaredNorm();
+    }
+
+    error /= (double)src2tgt_correspondence.size();
     return std::sqrt(error);
 }
 
 double RigidRegistration::RootMeanSquare(const PointCloud* sourcemesh, const PointCloud* targetmesh,
-    const std::vector<unsigned int>& tgt2src_correspondence)
+    const std::vector<unsigned int>& src2tgt_correspondence)
 {
-    const auto& source_points = sourcemesh->GetPoints();
+    /*const auto& source_points = sourcemesh->GetPoints();
     const auto& target_points = targetmesh->GetPoints();
 
     double error = 0;
@@ -438,5 +559,22 @@ double RigidRegistration::RootMeanSquare(const PointCloud* sourcemesh, const Poi
         error += residual.squaredNorm();
     }
     error /= (double)tgt2src_correspondence.size();
+    return std::sqrt(error);*/
+
+    const auto& source_points = sourcemesh->GetPoints();
+    const auto& target_points = targetmesh->GetPoints();
+
+    double error = 0;
+    int c = 0;
+    Eigen::Vector3d targetCentroid = Estimators::ComputeCenteroid(target_points);
+
+    for (unsigned int index = 0; index < src2tgt_correspondence.size(); ++index)
+    {
+        Eigen::Vector3d sourcePoint = source_points.at(index)->GetPosition();
+        Eigen::Vector3d targetPoint = target_points.at(src2tgt_correspondence.at(index))->GetPosition();
+        Eigen::Vector3d residual = targetPoint - sourcePoint;
+        error += residual.squaredNorm();
+    }
+    error /= (double)src2tgt_correspondence.size();
     return std::sqrt(error);
 }
