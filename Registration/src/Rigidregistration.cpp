@@ -28,9 +28,15 @@ MethodsData* RigidRegistration::GetMethodsData()
     return data;
 }
 
+void RigidRegistration::Reset()
+{
+    Setup();
+}
+
 
 const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
 {
+    std::cout << "RigidRegistration::Run()\n";
     std::vector<Eigen::Affine3d> transformations;
 
     MethodsData::MODE mode;
@@ -124,8 +130,8 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
     preMatchFunction = foo;
     //MatchPointClouds(data->getTargetPointCloud(), targetmesh); 
     //currentError = RootMeanSquare(data->getTargetPointCloud(), targetmesh, tgt2src_correspondence);
-    MatchPointClouds(data->getSourcePointCloud(), targetmesh);
-    currentError = RootMeanSquare(data->getSourcePointCloud(), targetmesh, src2tgt_correspondence);
+    MatchPointClouds(sourcemesh, targetmesh);
+    currentError = RootMeanSquare(sourcemesh, targetmesh, src2tgt_correspondence);
 
     unsigned int i = 0;
     unsigned int correspondences = 0;

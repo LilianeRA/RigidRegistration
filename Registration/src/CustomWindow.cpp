@@ -95,7 +95,8 @@ void CustomWindow::SetActiveMethod()
 	estimation.erase(std::remove_if(estimation.begin(), estimation.end(), [](unsigned char x) { return std::isspace(x); }), estimation.end());
 
 	//std::cout << "SetActiveMethod() " << method << ", " << match << ", " << estimation << ", "<< ctsf_percentage <<"\n";
-	data->setMethod(method, match, estimation, ctsf_percentage); 
+	data->setMethod(method, match, estimation, ctsf_percentage);
+	registration->Reset();
 }
 
 void CustomWindow::ResetSourceCloud()
@@ -193,6 +194,7 @@ void CustomWindow::SetCustomWindow()
 	{
 		std::cout << "Starting: " << estimationConfig.at(estimationChoice).first << "-" << matchConfig.at(matchChoice).first << std::endl;
 
+		ResetSourceCloud();
 		SetActiveMethod();
 		const std::vector<Eigen::Affine3d>& transformations = registration->Run();
 		// updating the visualization
@@ -203,8 +205,7 @@ void CustomWindow::SetCustomWindow()
 	}
 	if (ImGui::Button("Reset point clouds"))
 	{
-		ResetSourceCloud();
-		this->registration->GetMethodsData()->ResetSourceCloud();
+		ResetSourceCloud(); // so you can see it before restarting
 	}
 	ImGui::End();
 }

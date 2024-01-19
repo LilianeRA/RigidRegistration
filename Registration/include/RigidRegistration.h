@@ -13,6 +13,8 @@ class RigidRegistration
 
         MethodsData* GetMethodsData();
 
+        void Reset();
+
         const std::vector<Eigen::Affine3d>& Run();
 
     private:

@@ -156,8 +156,6 @@ void MethodsData::setPointClouds(const std::string &sourcemesh_str, const std::s
 		/*this->totalholes = totalholes;
 		this->holeradius = holeradius;*/
         initInput(downscalestep);
-
-        this->original_sourcemesh = sourcemesh->Copy();
     }
     else
     {
@@ -175,19 +173,6 @@ void MethodsData::getActiveMethod(MODE &mode, METHOD& method, MATCH& match, ESTI
     estimation = this->estimation;
 }
 
-void MethodsData::ResetSourceCloud()
-{
-    //delete sourcemesh;
-    //sourcemesh = nullptr;
-
-    sourcemesh = original_sourcemesh->Copy();
-}
-
-
-const PointCloud* MethodsData::getOriginalSourcePointCloud() const
-{
-    return original_sourcemesh;
-}
 
 const PointCloud* MethodsData::getSourcePointCloud() const
 {

@@ -42,7 +42,6 @@ class MethodsData
         void setPointClouds(const std::string &sourcemesh_str, const std::string &targetmesh_str, int downscalestep, int totalholes, double holeradius);
 
         void getActiveMethod(MODE &mode, METHOD &method, MATCH &match, ESTIMATION &estimation) const;
-        void ResetSourceCloud();
 
         const PointCloud* getSourcePointCloud() const;
         const PointCloud* getTargetPointCloud() const;
@@ -68,8 +67,7 @@ class MethodsData
         std::string outputdir = ""; // is also the result directory
         std::string testname = "";
         std::string gtfilepath = "";
-		const PointCloud* original_sourcemesh;
-		PointCloud* sourcemesh = nullptr;
+		PointCloud *sourcemesh = nullptr;
 		PointCloud *targetmesh = nullptr;
 		/*int totalholes;
 		double holeradius;
@@ -83,7 +81,6 @@ class MethodsData
         bool tensorParametersSeted = false;
 
         void initInput(int downscalestep);
-        const PointCloud* getOriginalSourcePointCloud() const;
 };
 
 #endif // METHODSDATA_H
