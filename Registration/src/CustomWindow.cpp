@@ -204,6 +204,7 @@ void CustomWindow::SetCustomWindow()
 	if (ImGui::Button("Reset point clouds"))
 	{
 		ResetSourceCloud();
+		this->registration->GetMethodsData()->ResetSourceCloud();
 	}
 	ImGui::End();
 }

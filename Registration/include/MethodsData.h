@@ -39,9 +39,10 @@ class MethodsData
         void setMethod(const std::string &method, const std::string &match, const std::string &estimation, const double ctsf_percentage);
         void setGTfile(const std::string &gtfilepath);
         void SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN);
-        void setPointClouds(const std::string &sourcemesh, const std::string &targetmesh, int downscalestep, int totalholes, double holeradius);
+        void setPointClouds(const std::string &sourcemesh_str, const std::string &targetmesh_str, int downscalestep, int totalholes, double holeradius);
 
         void getActiveMethod(MODE &mode, METHOD &method, MATCH &match, ESTIMATION &estimation) const;
+        void ResetSourceCloud();
 
         const PointCloud* getSourcePointCloud() const;
         const PointCloud* getTargetPointCloud() const;
@@ -67,8 +68,9 @@ class MethodsData
         std::string outputdir = ""; // is also the result directory
         std::string testname = "";
         std::string gtfilepath = "";
-		PointCloud* sourcemesh;
-		PointCloud *targetmesh;
+		const PointCloud* original_sourcemesh;
+		PointCloud* sourcemesh = nullptr;
+		PointCloud *targetmesh = nullptr;
 		/*int totalholes;
 		double holeradius;
 		std::vector<int> holesIndex; // the hole center is a point of the point cloud */
@@ -81,6 +83,7 @@ class MethodsData
         bool tensorParametersSeted = false;
 
         void initInput(int downscalestep);
+        const PointCloud* getOriginalSourcePointCloud() const;
 };
 
 #endif // METHODSDATA_H

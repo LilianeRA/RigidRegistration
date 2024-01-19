@@ -128,34 +128,36 @@ void MethodsData::setGTfile(const std::string &gtfilepath)
     }
 }
 
-void MethodsData::setPointClouds(const std::string &sourcemesh, const std::string &targetmesh,
+void MethodsData::setPointClouds(const std::string &sourcemesh_str, const std::string &targetmesh_str,
 		int downscalestep, int totalholes, double holeradius)
 {
     if(this->mode == MODE::MESHBACTH || this->mode == MODE::MESHVIEW)
     {
-		if(sourcemesh.empty() || targetmesh.empty())
+		if(sourcemesh_str.empty() || targetmesh_str.empty())
 		{
 		    std::cout<<"Error: point cloud filename empty\n";
 		    exit(EXIT_FAILURE);
 		}
-        if(sourcemesh.find(".ply") == std::string::npos &&
-           sourcemesh.find(".dat") == std::string::npos ||
-           targetmesh.find(".ply") == std::string::npos &&
-           targetmesh.find(".dat") == std::string::npos )
+        if(sourcemesh_str.find(".ply") == std::string::npos &&
+           sourcemesh_str.find(".dat") == std::string::npos ||
+           targetmesh_str.find(".ply") == std::string::npos &&
+           targetmesh_str.find(".dat") == std::string::npos )
         {
             std::cout<<"Error: input file not supported. Aborting."<<std::endl;
 			std::cout<<"Source: "<<sourcemesh<<std::endl;
 			std::cout<<"Target: "<<targetmesh<<std::endl;
             exit(EXIT_FAILURE);
         }
-        std::string srcmeshpath = DirHandler::JoinPaths(this->inputdir, sourcemesh);
-        std::string tgtmeshpath = DirHandler::JoinPaths(this->inputdir, targetmesh);
+        std::string srcmeshpath = DirHandler::JoinPaths(this->inputdir, sourcemesh_str);
+        std::string tgtmeshpath = DirHandler::JoinPaths(this->inputdir, targetmesh_str);
 
 		this->sourcemesh = new PointCloud(srcmeshpath);
 		this->targetmesh = new PointCloud(tgtmeshpath);
 		/*this->totalholes = totalholes;
 		this->holeradius = holeradius;*/
         initInput(downscalestep);
+
+        this->original_sourcemesh = sourcemesh->Copy();
     }
     else
     {
@@ -173,6 +175,19 @@ void MethodsData::getActiveMethod(MODE &mode, METHOD& method, MATCH& match, ESTI
     estimation = this->estimation;
 }
 
+void MethodsData::ResetSourceCloud()
+{
+    //delete sourcemesh;
+    //sourcemesh = nullptr;
+
+    sourcemesh = original_sourcemesh->Copy();
+}
+
+
+const PointCloud* MethodsData::getOriginalSourcePointCloud() const
+{
+    return original_sourcemesh;
+}
 
 const PointCloud* MethodsData::getSourcePointCloud() const
 {
