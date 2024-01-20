@@ -25,7 +25,6 @@ class CustomWindow : public WindowGLFW
 		bool showTgtPointCloud = true;
 		std::string sourcePointCloudName{ "" };
 		std::string targetPointCloudName{ "" };
-		const PointCloud* sourceCloud; // for reseting the method
 
 		//std::vector<DrawableSpheres*> mOtherSpheres;
 		DrawableSpheres* originalSourceSpheres = nullptr;
@@ -41,11 +40,12 @@ class CustomWindow : public WindowGLFW
 		float ctsf_percentage = 0.0f; // 0 to 100 for the GUI. Remember to divide by 100 before passing it to the registration method.
 
 		RigidRegistration *registration = nullptr;
+		std::vector<Eigen::Affine3d> transformations;
 
 		void GetActiveMethod(const MethodsData *data);
 		void SetActiveMethod();
 		void TransformSourceSpheres(const Eigen::Affine3d& transformation);
 		void ResetSourceCloud();
-		void ColorCorrespondences(const glm::dvec3 &correspColor);
+		void ColorCorrespondences(const glm::dvec3 &correspColor, const std::vector<bool>& correspondences);
 };
 #endif // CUSTOMWINDOW_H

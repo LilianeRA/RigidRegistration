@@ -215,6 +215,8 @@ void CustomWindow::SetCustomWindow()
 		ImGui::RadioButton(match.first.c_str(), &matchChoice, match_v_button++);
 	}
 
+	static int iterations = 0;
+	static int currentIteration = 0;
 	ImGui::SliderFloat("CTSF percentage", &ctsf_percentage, 0.0f, 100.0f, "%.0f");
 	if (ImGui::Button("Start Registration"))
 	{
@@ -222,24 +224,40 @@ void CustomWindow::SetCustomWindow()
 
 		ResetSourceCloud();
 		SetActiveMethod();
-		const std::vector<Eigen::Affine3d>& transformations = registration->Run();
+		transformations.clear();
+		transformations = registration->Run();
+		iterations = transformations.size()+1;
 		// updating the visualization
 		for (const auto& t : transformations)
 		{
 			TransformSourceSpheres(t);
 		}
-		ColorCorrespondences(glm::dvec3(0.0,0.5,0.0));
+		ColorCorrespondences(glm::dvec3(0.0,0.5,0.0), registration->GetCorrespondentPoints());
 	}
+	ImGui::SameLine();
 	if (ImGui::Button("Reset point clouds"))
 	{
+		transformations.clear();
 		ResetSourceCloud(); // so you can see it before restarting
+		iterations = 0;
+		currentIteration = 0;
+	}
+	ImGui::SliderInt("Iterations", &currentIteration, 0, iterations);
+	if (ImGui::Button("View iteration"))
+	{
+		ResetSourceCloud(); // so you can see it before restarting
+		for (int index = 0; index < currentIteration; index++)
+			TransformSourceSpheres(transformations.at(index));
+		//std::vector<bool> correspondences;
+
+		//ColorCorrespondences(glm::dvec3(0.0, 0.5, 0.0), correspondences);
 	}
 	ImGui::End();
 }
 
-void CustomWindow::ColorCorrespondences(const glm::dvec3& correspColor)
+void CustomWindow::ColorCorrespondences(const glm::dvec3& correspColor, 
+	const std::vector<bool> & correspondences)
 {
-	const auto& correspondences = registration->GetCorrespondentPoints();
 	for (int index = 0; index < correspondences.size(); ++index)
 	{
 		if (correspondences.at(index))
