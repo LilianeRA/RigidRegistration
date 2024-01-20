@@ -243,7 +243,7 @@ void CustomWindow::SetCustomWindow()
 		currentIteration = 0;
 	}
 	ImGui::SliderInt("Iterations", &currentIteration, 0, iterations);
-	if (ImGui::Button("View iteration"))
+	if (ImGui::Button("View iteration")) 
 	{
 		ResetSourceCloud(); // so you can see it before restarting
 		for (int index = 0; index < currentIteration; index++)
