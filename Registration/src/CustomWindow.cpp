@@ -226,7 +226,7 @@ void CustomWindow::SetCustomWindow()
 		SetActiveMethod();
 		transformations.clear();
 		transformations = registration->Run();
-		iterations = transformations.size()+1;
+		iterations = transformations.size();
 		// updating the visualization
 		for (const auto& t : transformations)
 		{
@@ -245,12 +245,34 @@ void CustomWindow::SetCustomWindow()
 	ImGui::SliderInt("Iterations", &currentIteration, 0, iterations);
 	if (ImGui::Button("View iteration")) 
 	{
-		ResetSourceCloud(); // so you can see it before restarting
+		ResetSourceCloud(); 
 		for (int index = 0; index < currentIteration; index++)
+		{
 			TransformSourceSpheres(transformations.at(index));
-		//std::vector<bool> correspondences;
+		}
 
-		//ColorCorrespondences(glm::dvec3(0.0, 0.5, 0.0), correspondences);
+		// its just like the match function
+		std::vector<bool> correspondences;
+		double distance = DBL_MAX;
+		for (int src_index = 0; src_index < sourceSpheres->GetTotalSpheres(); src_index++)
+		{
+			int minDistTgtIndex = -1;
+			for (int tgt_index = 0; tgt_index < targetSpheres->GetTotalSpheres(); tgt_index++)
+			{
+				double d = glm::length(sourceSpheres->GetPosition(src_index) - targetSpheres->GetPosition(tgt_index));
+				if (distance > d)
+				{
+					distance = d;
+					minDistTgtIndex = tgt_index;
+				}
+			}
+			if (distance < 0.000077)
+			{
+				correspondences.push_back(true);
+			}
+			else correspondences.push_back(false);
+		}
+		ColorCorrespondences(glm::dvec3(0.0, 0.5, 0.0), correspondences);
 	}
 	ImGui::End();
 }

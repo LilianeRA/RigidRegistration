@@ -29,7 +29,7 @@ Point* Point::Copy() const
 	copyPoint->SetAsRemoved(removed);
 	if (tensor)
 		copyPoint->tensor = tensor->Copy();
-	else std::cout << "null ";
+	//else std::cout << "null ";
 	return copyPoint;
 }
 
