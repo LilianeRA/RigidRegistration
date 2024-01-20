@@ -106,6 +106,7 @@ void CustomWindow::GetActiveMethod(const MethodsData* data)
 			estimationChoice = index;
 		}
 	}
+	this->ctsf_percentage = data->GetTensorNeighborPercentage() * 100.0;
 }
 
 void CustomWindow::SetActiveMethod()
@@ -227,12 +228,25 @@ void CustomWindow::SetCustomWindow()
 		{
 			TransformSourceSpheres(t);
 		}
+		ColorCorrespondences(glm::dvec3(0.0,0.5,0.0));
 	}
 	if (ImGui::Button("Reset point clouds"))
 	{
 		ResetSourceCloud(); // so you can see it before restarting
 	}
 	ImGui::End();
+}
+
+void CustomWindow::ColorCorrespondences(const glm::dvec3& correspColor)
+{
+	const auto& correspondences = registration->GetCorrespondentPoints();
+	for (int index = 0; index < correspondences.size(); ++index)
+	{
+		if (correspondences.at(index))
+		{
+			sourceSpheres->SetSphereColor(index, correspColor);
+		}
+	}
 }
 
 void CustomWindow::CustomDraw()

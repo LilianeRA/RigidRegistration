@@ -37,7 +37,7 @@ class Point
 		// not to be used in the match step.
 		static double PureCTSF_TensorDistance(const Point* p1, const Point* p2); // for SWC correspondence list during estimation
 		// for the match step
-		static double EuclideanDistance(const Point *p1, const Point *p2, const double weigh, const bool verbose = false);
+		static double EuclideanDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double CTSF_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double JDiff_TensorDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);
 		static double LieDirectDistance(const Point *p1, const Point *p2, const double weight, const bool verbose = false);

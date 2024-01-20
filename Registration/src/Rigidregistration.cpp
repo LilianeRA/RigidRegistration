@@ -145,17 +145,29 @@ const std::vector<Eigen::Affine3d>& RigidRegistration::Run()
         }
         ++i;
     }*/
+    
+    result2tgt_correspondence.clear();
+    const auto& resultPoints = sourcemesh->GetPoints();
+    const auto& targetPoints = targetmesh->GetPoints();
     for (unsigned int t : src2tgt_correspondence)
     {
-        if (i == t) 
+        if (Point::EuclideanDistance(resultPoints.at(i), targetPoints.at(t), 0.0) < 0.000077)
         {
             correspondences++;
+            result2tgt_correspondence.push_back(true);
         }
+        else
+            result2tgt_correspondence.push_back(false);
         ++i;
     }
     std::cout << "Final Euclidean error: " << currentError << " correspondences " << correspondences << std::endl;
 
     return transformations;
+}
+
+const std::vector<bool>& RigidRegistration::GetCorrespondentPoints()
+{
+    return result2tgt_correspondence;
 }
 
 void RigidRegistration::Setup()

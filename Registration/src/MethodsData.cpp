@@ -110,8 +110,7 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
         exit(EXIT_FAILURE);
     }
     this->ctsf_percentage = ctsf_percentage;
-    std::cout << "MethodsData::setMethod this->ctsf_percentage " << this->ctsf_percentage << std::endl;
-
+    
     if (reset) Setup();
 }
 
@@ -244,6 +243,11 @@ const PointCloud* MethodsData::getTargetPointCloud() const
 const std::string MethodsData::GetTestDirectory() const
 {
     return DirHandler::JoinPaths(outputdir, testname);
+}
+
+double MethodsData::GetTensorNeighborPercentage() const
+{
+    return ctsf_percentage;
 }
 
 void MethodsData::SetTensorParameters(const double alphacut_degrees, const double alphaellipse_degrees, const double sigmaN)

@@ -48,6 +48,8 @@ class MethodsData
 
         const std::string GetTestDirectory() const;
 
+        double GetTensorNeighborPercentage() const;
+
 		void saveParameters() const;
     protected:
 

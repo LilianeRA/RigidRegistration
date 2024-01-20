@@ -12,6 +12,7 @@ class RigidRegistration
         virtual ~RigidRegistration();
 
         MethodsData* GetMethodsData();
+        const std::vector<bool>& GetCorrespondentPoints();
 
         void Reset();
 
@@ -32,6 +33,7 @@ class RigidRegistration
         //std::vector<unsigned int> tgt2src_tensorCorrespondence;
         std::vector<unsigned int> src2tgt_correspondence;
         std::vector<unsigned int> src2tgt_tensorCorrespondence;
+        std::vector<bool> result2tgt_correspondence;
 
         std::function< double(const Point*, const Point*, const double, const bool) > distanceFunction;
         std::function< const Eigen::Affine3d(const PointCloud*, const PointCloud* , 
@@ -45,7 +47,6 @@ class RigidRegistration
 
         void Setup();
         void MatchPointClouds(const PointCloud* sourcemesh, const PointCloud* targetmesh);
-
         void SetTensorCorrespondenceList();
 
         static double RootMeanSquareOfTransformation(const PointCloud* sourcemesh, const PointCloud* targetmesh,

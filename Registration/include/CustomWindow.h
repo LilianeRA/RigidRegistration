@@ -38,7 +38,7 @@ class CustomWindow : public WindowGLFW
 		std::vector<std::pair<std::string, bool>> methodConfig;
 		std::vector<std::pair<std::string, bool>> matchConfig;
 		std::vector<std::pair<std::string, bool>> estimationConfig;
-		float ctsf_percentage = 0.0f;
+		float ctsf_percentage = 0.0f; // 0 to 100 for the GUI. Remember to divide by 100 before passing it to the registration method.
 
 		RigidRegistration *registration = nullptr;
 
@@ -46,5 +46,6 @@ class CustomWindow : public WindowGLFW
 		void SetActiveMethod();
 		void TransformSourceSpheres(const Eigen::Affine3d& transformation);
 		void ResetSourceCloud();
+		void ColorCorrespondences(const glm::dvec3 &correspColor);
 };
 #endif // CUSTOMWINDOW_H
