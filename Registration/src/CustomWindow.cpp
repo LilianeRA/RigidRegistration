@@ -266,7 +266,7 @@ void CustomWindow::SetCustomWindow()
 					minDistTgtIndex = tgt_index;
 				}
 			}
-			if (distance < 0.000077)
+			if (distance < 0.0000077)
 			{
 				correspondences.push_back(true);
 			}
