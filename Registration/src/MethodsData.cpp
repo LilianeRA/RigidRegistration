@@ -110,6 +110,7 @@ void MethodsData::setMethod(const std::string &method, const std::string &match,
         exit(EXIT_FAILURE);
     }
     this->ctsf_percentage = ctsf_percentage;
+    std::cout << "MethodsData::setMethod this->ctsf_percentage " << this->ctsf_percentage << std::endl;
 
     if (reset) Setup();
 }

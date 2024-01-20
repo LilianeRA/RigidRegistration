@@ -120,7 +120,7 @@ void CustomWindow::SetActiveMethod()
 	estimation.erase(std::remove_if(estimation.begin(), estimation.end(), [](unsigned char x) { return std::isspace(x); }), estimation.end());
 
 	std::cout << "SetActiveMethod() " << method << ", " << match << ", " << estimation << ", "<< ctsf_percentage <<"\n";
-	data->setMethod(method, match, estimation, ctsf_percentage, true);
+	data->setMethod(method, match, estimation, ctsf_percentage/100.0, true);
 	registration->Reset();
 }
 
