@@ -3,4 +3,6 @@ Algorithms based on Iterative Closest Point (ICP) for Rigid Registration. Contai
 
 Visualization by "Visualizer3D" with Dear ImGUI, GLFW, GLAD and OpenGL.
 
-![Screenshot](/Registration/screenshot.png?raw=true "screenshot")
+Execution of ICP-CTSF 50%:
+
+![](/Registration/registrationICP_CTSF_50.gif)
