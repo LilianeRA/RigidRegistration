@@ -5,4 +5,4 @@ Visualization by "Visualizer3D" with Dear ImGUI, GLFW, GLAD and OpenGL.
 
 Execution of ICP-CTSF 50%:
 
-![](/Registration/registrationICP_CTSF_50.gif)
+![Cover](/Registration/registrationICP_CTSF_50.gif)
